@@ -124,6 +124,7 @@ class MainWindow(QMainWindow):
             self._connect_btn.setText(tr("btn_disconnect"))
         else:
             self._connect_btn.setText(tr("btn_connect"))
+            self._status.showMessage(tr("status_not_connected"))
         self._display.retranslate_ui()
 
     def _on_setup_clicked(self):

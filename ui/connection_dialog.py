@@ -4,12 +4,14 @@ from PyQt5.QtWidgets import (
 from translations import tr
 from config import app_config
 from instrument import Instrument
+from ui import DIALOG_STYLE
 
 
 class ConnectionDialog(QDialog):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setModal(True)
+        self.setStyleSheet(DIALOG_STYLE)
         self._build_ui()
         self._load_config()
         self.setWindowTitle(tr("dlg_conn_title"))
