@@ -1,4 +1,8 @@
 # Maintainer: Kalle Hagen <dev@hammarang-solutions.se>
+#
+# Voraussetzung: PyInstaller-Bundle muss bereits gebaut sein:
+#   bash packaging/build-all.sh   (oder: bash packaging/build-appimage.sh)
+#   cd packaging && makepkg -f
 pkgname=hp34401a-gui
 pkgver=1.0.0
 pkgrel=1
@@ -7,26 +11,23 @@ arch=('x86_64')
 url="https://git.cls.net/kalle/Agilent_34401a_GUI"
 license=('MIT')
 depends=()
-makedepends=('python' 'python-pip')
+makedepends=()
 source=()
 sha256sums=()
 
-build() {
-    ROOT="$(cd "$startdir/.." && pwd)"
-    cd "$ROOT"
-    pip install pyinstaller --quiet
-    python3 packaging/create-icon.py
-    pyinstaller packaging/hp34401a.spec \
-        --distpath "$ROOT/dist" \
-        --workpath /tmp/hp34401a-build \
-        --noconfirm
-}
-
 package() {
     ROOT="$(cd "$startdir/.." && pwd)"
+    BUNDLE="$ROOT/dist/hp34401a"
+
+    if [ ! -f "$BUNDLE/hp34401a" ]; then
+        error "PyInstaller-Bundle fehlt: $BUNDLE"
+        error "Bitte zuerst ausführen: bash packaging/build-all.sh"
+        return 1
+    fi
 
     install -d "$pkgdir/opt/hp34401a"
-    cp -r "$ROOT/dist/hp34401a/." "$pkgdir/opt/hp34401a/"
+    cp -r "$BUNDLE/." "$pkgdir/opt/hp34401a/"
+    chmod +x "$pkgdir/opt/hp34401a/hp34401a"
 
     install -Dm755 /dev/stdin "$pkgdir/usr/bin/hp34401a" << 'WRAPPER'
 #!/bin/sh
