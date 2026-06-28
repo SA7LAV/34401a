@@ -1,0 +1,42 @@
+# Maintainer: Kalle Hagen <dev@hammarang-solutions.se>
+pkgname=hp34401a-gui
+pkgver=1.0.0
+pkgrel=1
+pkgdesc="Linux GUI for HP/Agilent/Keysight 34401A Multimeter (Python 3.14 bundled)"
+arch=('x86_64')
+url="https://git.cls.net/kalle/Agilent_34401a_GUI"
+license=('MIT')
+depends=()
+makedepends=('python' 'python-pip')
+source=()
+sha256sums=()
+
+build() {
+    ROOT="$(cd "$startdir/.." && pwd)"
+    cd "$ROOT"
+    pip install pyinstaller --quiet
+    python3 packaging/create-icon.py
+    pyinstaller packaging/hp34401a.spec \
+        --distpath "$ROOT/dist" \
+        --workpath /tmp/hp34401a-build \
+        --noconfirm
+}
+
+package() {
+    ROOT="$(cd "$startdir/.." && pwd)"
+
+    install -d "$pkgdir/opt/hp34401a"
+    cp -r "$ROOT/dist/hp34401a/." "$pkgdir/opt/hp34401a/"
+
+    install -Dm755 /dev/stdin "$pkgdir/usr/bin/hp34401a" << 'WRAPPER'
+#!/bin/sh
+exec /opt/hp34401a/hp34401a "$@"
+WRAPPER
+
+    install -Dm644 "$ROOT/hp34401a.desktop" \
+        "$pkgdir/usr/share/applications/hp34401a.desktop"
+    install -Dm644 "$ROOT/assets/hp34401a.png" \
+        "$pkgdir/usr/share/pixmaps/hp34401a.png"
+    install -Dm644 "$ROOT/assets/hp34401a.png" \
+        "$pkgdir/usr/share/icons/hicolor/128x128/apps/hp34401a.png"
+}

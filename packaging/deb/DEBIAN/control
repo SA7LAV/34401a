@@ -1,0 +1,16 @@
+Package: hp34401a-gui
+Version: 1.0.0
+Section: science
+Priority: optional
+Architecture: amd64
+Maintainer: Kalle Hagen <dev@hammarang-solutions.se>
+Homepage: https://git.cls.net/kalle/Agilent_34401a_GUI
+Description: Linux GUI for HP/Agilent/Keysight 34401A Multimeter
+ Control and data-logging software for the HP/Agilent/Keysight 34401A
+ digital multimeter via RS-232 serial connection.
+ .
+ Supports all 10 measurement modes (VDC, ADC, VAC, AAC, 2W/4W resistance,
+ frequency, period, diode and continuity) with live display, MIN/MAX/AVG
+ statistics and configurable sampling rate.
+ .
+ Python 3.14 runtime is bundled – no system Python required.
