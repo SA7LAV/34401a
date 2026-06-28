@@ -11,6 +11,7 @@ class SetupDialog(QDialog):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setModal(True)
+        self.setMinimumWidth(550)
         self._build_ui()
         self._load_from_config()
         self.setWindowTitle(tr("setup_title"))
