@@ -29,8 +29,10 @@ def test_diode_no_ranges():
 def test_format_millivolts():
     val, prefix = format_value(0.012)
     assert prefix == "m"
+    assert val == "12.0000"
 
 
 def test_format_kiloohm():
     val, prefix = format_value(4700.0)
     assert prefix == "k"
+    assert val == "4.7000"
