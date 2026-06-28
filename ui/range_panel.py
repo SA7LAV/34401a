@@ -22,6 +22,7 @@ class RangePanel(QWidget):
     def set_mode(self, mode: MeasMode) -> None:
         for btn in self._buttons:
             self._layout.removeWidget(btn)
+            btn.hide()
             btn.deleteLater()
         self._buttons.clear()
         self._active_btn = None
