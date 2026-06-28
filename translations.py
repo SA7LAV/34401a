@@ -1,4 +1,5 @@
-from PyQt5.QtCore import QObject, pyqtSignal
+from PyQt5.QtCore import QObject, pyqtSignal, QTranslator, QLibraryInfo
+from PyQt5.QtWidgets import QApplication
 
 STRINGS = {
     "de": {
@@ -95,6 +96,7 @@ STRINGS = {
 }
 
 _current_lang = "de"
+_qt_translator = QTranslator()
 
 
 class _Notifier(QObject):
@@ -112,9 +114,16 @@ def tr(key: str, **kwargs) -> str:
 
 def set_language(lang: str) -> None:
     global _current_lang
-    if lang in STRINGS:
-        _current_lang = lang
-        _notifier.language_changed.emit(lang)
+    if lang not in STRINGS:
+        return
+    _current_lang = lang
+    app = QApplication.instance()
+    if app:
+        app.removeTranslator(_qt_translator)
+        path = QLibraryInfo.location(QLibraryInfo.TranslationsPath)
+        if _qt_translator.load(f"qtbase_{lang}", path):
+            app.installTranslator(_qt_translator)
+    _notifier.language_changed.emit(lang)
 
 
 def current_language() -> str:
