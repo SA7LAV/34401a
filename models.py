@@ -125,10 +125,11 @@ SI_PREFIXES = [
 ]
 
 
-def format_value(value: float) -> tuple:
+def format_value(value: float, decimals: int = 4) -> tuple:
+    fmt = f"{{:.{decimals}f}}"
     abs_val = abs(value)
     for threshold, prefix in SI_PREFIXES:
         if abs_val >= threshold or threshold == 1e-12:
             scaled = value / threshold
-            return f"{scaled:.4f}", prefix
+            return fmt.format(scaled), prefix
     return f"{value:.6e}", ""

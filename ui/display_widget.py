@@ -2,6 +2,7 @@ from PyQt5.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLabel, QFrame
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QFont
 from models import format_value
+from config import app_config
 
 DISPLAY_COLOR = "#00C0FF"
 SECONDARY_COLOR = "#0080AA"
@@ -28,6 +29,7 @@ class DisplayWidget(QWidget):
         self._unit = "VDC"
         self._stats = {"MIN": None, "MAX": None, "AVG": None, "_count": 0, "_sum": 0.0}
         self._build_ui()
+        self.apply_display_config()
 
     def _build_ui(self):
         root = QVBoxLayout(self)
@@ -43,16 +45,28 @@ class DisplayWidget(QWidget):
         main_row.addWidget(self._unit_label)
         root.addLayout(main_row)
 
+        self._stats_frame = QWidget()
+        stats_layout = QVBoxLayout(self._stats_frame)
+        stats_layout.setContentsMargins(0, 0, 0, 0)
+
         line = QFrame()
         line.setFrameShape(QFrame.HLine)
         line.setStyleSheet(f"color: {SECONDARY_COLOR};")
-        root.addWidget(line)
+        stats_layout.addWidget(line)
 
         stats_row = QHBoxLayout()
         self._min_lbl = self._stat_block("MIN", stats_row)
         self._max_lbl = self._stat_block("MAX", stats_row)
         self._avg_lbl = self._stat_block("AVG", stats_row)
-        root.addLayout(stats_row)
+        stats_layout.addLayout(stats_row)
+
+        root.addWidget(self._stats_frame)
+
+    def apply_display_config(self) -> None:
+        self._stats_frame.setVisible(app_config.show_stats)
+
+    def retranslate_ui(self) -> None:
+        self.apply_display_config()
 
     def _stat_block(self, title, layout):
         col = QVBoxLayout()
@@ -66,7 +80,7 @@ class DisplayWidget(QWidget):
         return v
 
     def update_value(self, raw_value: float) -> None:
-        val_str, prefix = format_value(raw_value)
+        val_str, prefix = format_value(raw_value, decimals=app_config.decimals)
         self._val_label.setText(val_str)
         self._prefix_label.setText(prefix)
 
@@ -80,7 +94,7 @@ class DisplayWidget(QWidget):
         s["AVG"] = s["_sum"] / s["_count"]
 
         def fmt(v):
-            vs, p = format_value(v)
+            vs, p = format_value(v, decimals=app_config.decimals)
             return f"{vs} {p}{self._unit}"
 
         self._min_lbl.setText(fmt(s["MIN"]))

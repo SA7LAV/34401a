@@ -4,6 +4,7 @@ import threading
 import time
 from typing import Optional
 from PyQt5.QtCore import QObject, pyqtSignal
+from config import app_config
 
 
 class Instrument(QObject):
@@ -91,7 +92,7 @@ class Instrument(QObject):
             except (serial.SerialException, ValueError, OSError) as e:
                 self.error_occurred.emit(str(e))
                 break
-            time.sleep(0.05)
+            time.sleep(app_config.sampling_ms / 1000.0)
 
     @staticmethod
     def list_ports() -> list:
