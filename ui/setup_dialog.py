@@ -115,8 +115,11 @@ class SetupDialog(QDialog):
         super().reject()
 
     def _load_from_config(self):
+        # Signale blockieren damit setCurrentIndex() kein set_language() auslöst
+        self._lang_combo.blockSignals(True)
         lang_idx = self._lang_combo.findData(app_config.language)
         self._lang_combo.setCurrentIndex(max(0, lang_idx))
+        self._lang_combo.blockSignals(False)
 
         ports = [self._port_combo.itemText(i) for i in range(self._port_combo.count())]
         if app_config.serial_port in ports:
