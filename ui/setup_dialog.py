@@ -2,7 +2,7 @@ from PyQt5.QtWidgets import (
     QDialog, QVBoxLayout, QTabWidget, QWidget,
     QFormLayout, QComboBox, QCheckBox, QDialogButtonBox, QLabel
 )
-from translations import tr, set_language
+from translations import tr, set_language, current_language
 from config import app_config
 from instrument import Instrument
 
@@ -12,6 +12,7 @@ class SetupDialog(QDialog):
         super().__init__(parent)
         self.setModal(True)
         self.setMinimumWidth(550)
+        self._original_lang = current_language()
         self._build_ui()
         self._load_from_config()
         self.setWindowTitle(tr("setup_title"))
@@ -37,6 +38,7 @@ class SetupDialog(QDialog):
         self._lang_combo = QComboBox()
         self._lang_combo.addItem(tr("lang_de"), "de")
         self._lang_combo.addItem(tr("lang_en"), "en")
+        self._lang_combo.currentIndexChanged.connect(self._on_lang_changed)
         form.addRow(QLabel(tr("lbl_language")), self._lang_combo)
         return w
 
@@ -105,6 +107,13 @@ class SetupDialog(QDialog):
 
         return w
 
+    def _on_lang_changed(self) -> None:
+        set_language(self._lang_combo.currentData())
+
+    def reject(self):
+        set_language(self._original_lang)
+        super().reject()
+
     def _load_from_config(self):
         lang_idx = self._lang_combo.findData(app_config.language)
         self._lang_combo.setCurrentIndex(max(0, lang_idx))
@@ -142,10 +151,6 @@ class SetupDialog(QDialog):
         app_config.set("display", "decimals",   self._decimals_combo.currentText())
         app_config.set("display", "show_stats", str(self._show_stats_chk.isChecked()))
 
-        new_lang = self._lang_combo.currentData()
-        app_config.set("app", "language", new_lang)
+        app_config.set("app", "language", self._lang_combo.currentData())
         app_config.save()
-
-        set_language(new_lang)
-
         self.accept()
