@@ -16,8 +16,8 @@ class Instrument(QObject):
         super().__init__(parent)
         self._port: Optional[serial.Serial] = None
         self._thread: Optional[threading.Thread] = None
-        self._running = False
-        self._lock = threading.Lock()
+        self._stop_event = threading.Event()
+        self._lock = threading.RLock()
 
     @property
     def is_connected(self) -> bool:
@@ -51,34 +51,39 @@ class Instrument(QObject):
 
     def _send_raw(self, cmd: str) -> None:
         with self._lock:
+            if self._port is None:
+                raise RuntimeError("Not connected")
             self._port.write(f"{cmd}\r\n".encode())
 
     def _readline(self) -> str:
         with self._lock:
+            if self._port is None:
+                raise RuntimeError("Not connected")
             return self._port.readline().decode().strip()
 
     def query(self, cmd: str) -> str:
-        self._send_raw(cmd)
-        return self._readline()
+        with self._lock:
+            self._send_raw(cmd)
+            return self._readline()
 
     def send_command(self, cmd: str) -> None:
         self._send_raw(cmd)
 
     def start_sampling(self) -> None:
-        if self._running:
+        if self._thread and self._thread.is_alive():
             return
-        self._running = True
+        self._stop_event.clear()
         self._thread = threading.Thread(target=self._sampling_loop, daemon=True)
         self._thread.start()
 
     def stop_sampling(self) -> None:
-        self._running = False
+        self._stop_event.set()
         if self._thread:
             self._thread.join(timeout=2.0)
             self._thread = None
 
     def _sampling_loop(self) -> None:
-        while self._running and self.is_connected:
+        while not self._stop_event.is_set() and self.is_connected:
             try:
                 response = self.query("READ?")
                 if response and "E+37" not in response:
