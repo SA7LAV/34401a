@@ -4,7 +4,7 @@
 #   bash packaging/build-all.sh   (oder: bash packaging/build-appimage.sh)
 #   cd packaging && makepkg -f
 pkgname=hp34401a-gui
-pkgver=1.0.0
+pkgver=1.0.1
 pkgrel=1
 pkgdesc="Linux GUI for HP/Agilent/Keysight 34401A Multimeter (Python 3.14 bundled)"
 arch=('x86_64')
