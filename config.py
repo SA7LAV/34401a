@@ -22,6 +22,11 @@ _DEFAULTS = {
         "show_stats":      "true",
         "overlay_enabled": "false",
     },
+    "overlay": {
+        "color": "#00C0FF",
+        "font":  "Courier New",
+        "size":  "72",
+    },
     "app": {
         "language": "de",
     },
@@ -83,6 +88,18 @@ class AppConfig:
     @property
     def overlay_enabled(self) -> bool:
         return self.get("display", "overlay_enabled").lower() == "true"
+
+    @property
+    def overlay_color(self) -> str:
+        return self.get("overlay", "color")
+
+    @property
+    def overlay_font(self) -> str:
+        return self.get("overlay", "font")
+
+    @property
+    def overlay_size(self) -> int:
+        return int(self.get("overlay", "size"))
 
     @property
     def serial_port(self) -> str:

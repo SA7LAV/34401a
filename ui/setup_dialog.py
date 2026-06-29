@@ -1,7 +1,9 @@
 from PyQt5.QtWidgets import (
     QDialog, QVBoxLayout, QTabWidget, QWidget,
-    QFormLayout, QComboBox, QCheckBox, QDialogButtonBox, QLabel
+    QFormLayout, QComboBox, QCheckBox, QDialogButtonBox, QLabel,
+    QPushButton, QColorDialog
 )
+from PyQt5.QtGui import QColor
 from translations import tr, set_language, current_language
 from config import app_config
 from instrument import Instrument
@@ -27,6 +29,7 @@ class SetupDialog(QDialog):
         self._tabs.addTab(self._build_interface_tab(),   tr("tab_interface"))
         self._tabs.addTab(self._build_measurement_tab(), tr("tab_measurement"))
         self._tabs.addTab(self._build_display_tab(),     tr("tab_display"))
+        self._tabs.addTab(self._build_overlay_tab(),     tr("tab_overlay"))
         layout.addWidget(self._tabs)
 
         buttons = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
@@ -107,10 +110,42 @@ class SetupDialog(QDialog):
         self._show_stats_chk = QCheckBox(tr("chk_show_stats"))
         form.addRow(QLabel(tr("lbl_show_stats")), self._show_stats_chk)
 
+        return w
+
+    def _build_overlay_tab(self) -> QWidget:
+        w = QWidget()
+        form = QFormLayout(w)
+
         self._overlay_chk = QCheckBox(tr("chk_overlay"))
         form.addRow(QLabel(tr("lbl_overlay")), self._overlay_chk)
 
+        self._overlay_color = app_config.overlay_color
+        self._color_btn = QPushButton()
+        self._color_btn.setFixedSize(80, 28)
+        self._color_btn.setStyleSheet(f"background: {self._overlay_color}; border: 1px solid #2A3560;")
+        self._color_btn.clicked.connect(self._pick_overlay_color)
+        form.addRow(QLabel(tr("lbl_overlay_color")), self._color_btn)
+
+        self._overlay_font_combo = QComboBox()
+        self._overlay_font_combo.addItems([
+            "Courier New", "Liberation Mono", "DejaVu Sans Mono",
+            "Consolas", "Arial", "Ubuntu",
+        ])
+        form.addRow(QLabel(tr("lbl_overlay_font")), self._overlay_font_combo)
+
+        self._overlay_size_combo = QComboBox()
+        self._overlay_size_combo.addItems(["48", "56", "64", "72", "80", "96", "120"])
+        form.addRow(QLabel(tr("lbl_overlay_size")), self._overlay_size_combo)
+
         return w
+
+    def _pick_overlay_color(self) -> None:
+        c = QColorDialog.getColor(QColor(self._overlay_color), self)
+        if c.isValid():
+            self._overlay_color = c.name()
+            self._color_btn.setStyleSheet(
+                f"background: {self._overlay_color}; border: 1px solid #2A3560;"
+            )
 
     def _on_lang_changed(self) -> None:
         set_language(self._lang_combo.currentData())
@@ -143,7 +178,14 @@ class SetupDialog(QDialog):
 
         self._decimals_combo.setCurrentText(str(app_config.decimals))
         self._show_stats_chk.setChecked(app_config.show_stats)
+
         self._overlay_chk.setChecked(app_config.overlay_enabled)
+        self._overlay_color = app_config.overlay_color
+        self._color_btn.setStyleSheet(
+            f"background: {self._overlay_color}; border: 1px solid #2A3560;"
+        )
+        self._overlay_font_combo.setCurrentText(app_config.overlay_font)
+        self._overlay_size_combo.setCurrentText(str(app_config.overlay_size))
 
     def _save_and_accept(self):
         app_config.set("serial", "port",     self._port_combo.currentText())
@@ -160,6 +202,10 @@ class SetupDialog(QDialog):
         app_config.set("display", "decimals",        self._decimals_combo.currentText())
         app_config.set("display", "show_stats",      str(self._show_stats_chk.isChecked()))
         app_config.set("display", "overlay_enabled", str(self._overlay_chk.isChecked()))
+
+        app_config.set("overlay", "color", self._overlay_color)
+        app_config.set("overlay", "font",  self._overlay_font_combo.currentText())
+        app_config.set("overlay", "size",  self._overlay_size_combo.currentText())
 
         app_config.set("app", "language", self._lang_combo.currentData())
         app_config.save()

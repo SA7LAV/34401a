@@ -4,10 +4,6 @@ from PyQt5.QtGui import QFont
 from models import format_value
 from config import app_config
 
-_VAL_FONT  = QFont("Courier New", 72, QFont.Bold)
-_UNIT_FONT = QFont("Courier New", 48, QFont.Bold)
-_COLOR     = "#00C0FF"
-
 
 class OverlayWindow(QWidget):
     def __init__(self, parent=None):
@@ -19,28 +15,40 @@ class OverlayWindow(QWidget):
         self._drag_pos = QPoint()
         self._unit = "VDC"
         self._build_ui()
+        self.apply_style()
 
     def _build_ui(self):
         layout = QHBoxLayout(self)
         layout.setContentsMargins(12, 8, 12, 8)
 
-        def lbl(text, font, align=Qt.AlignRight | Qt.AlignVCenter):
+        def lbl(text, align=Qt.AlignRight | Qt.AlignVCenter):
             w = QLabel(text)
-            w.setFont(font)
-            w.setStyleSheet(f"color: {_COLOR}; background: transparent;")
             w.setAlignment(align)
+            w.setAttribute(Qt.WA_TransparentForMouseEvents, True)
             return w
 
-        self._val_label    = lbl("----", _VAL_FONT)
-        self._prefix_label = lbl("",     _UNIT_FONT)
-        self._unit_label   = lbl("VDC",  _UNIT_FONT, Qt.AlignLeft | Qt.AlignVCenter)
-
-        for label in (self._val_label, self._prefix_label, self._unit_label):
-            label.setAttribute(Qt.WA_TransparentForMouseEvents, True)
+        self._val_label    = lbl("----")
+        self._prefix_label = lbl("")
+        self._unit_label   = lbl("VDC", Qt.AlignLeft | Qt.AlignVCenter)
 
         layout.addWidget(self._val_label)
         layout.addWidget(self._prefix_label)
         layout.addWidget(self._unit_label)
+
+    def apply_style(self) -> None:
+        color    = app_config.overlay_color
+        family   = app_config.overlay_font
+        size     = app_config.overlay_size
+        val_font  = QFont(family, size,        QFont.Bold)
+        unit_font = QFont(family, size * 2 // 3, QFont.Bold)
+        style = f"color: {color}; background: transparent;"
+        for label, font in (
+            (self._val_label,    val_font),
+            (self._prefix_label, unit_font),
+            (self._unit_label,   unit_font),
+        ):
+            label.setFont(font)
+            label.setStyleSheet(style)
 
     def update_value(self, raw_value: float) -> None:
         val_str, prefix = format_value(raw_value, decimals=app_config.decimals)
@@ -51,7 +59,6 @@ class OverlayWindow(QWidget):
         self._unit = unit
         self._unit_label.setText(unit)
 
-    # drag support (kein Fensterrahmen)
     def mousePressEvent(self, event):
         if event.button() == Qt.LeftButton:
             self._drag_pos = event.globalPos() - self.frameGeometry().topLeft()

@@ -135,6 +135,8 @@ class MainWindow(QMainWindow):
         dlg.exec_()
         self._display.apply_display_config()
         self._apply_overlay(app_config.overlay_enabled)
+        if self._overlay is not None:
+            self._overlay.apply_style()
 
     def _apply_overlay(self, enabled: bool) -> None:
         if enabled:

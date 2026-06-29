@@ -50,6 +50,10 @@ STRINGS = {
         "chk_show_stats":         "MIN / MAX / AVG sichtbar",
         "lbl_overlay":            "OBS Overlay:",
         "chk_overlay":            "Overlay-Fenster für Streaming anzeigen",
+        "tab_overlay":            "Overlay",
+        "lbl_overlay_color":      "Schriftfarbe:",
+        "lbl_overlay_font":       "Schriftart:",
+        "lbl_overlay_size":       "Schriftgröße:",
     },
     "en": {
         "window_title":           "HP 34401A – Multimeter Control",
@@ -96,6 +100,10 @@ STRINGS = {
         "chk_show_stats":         "MIN / MAX / AVG visible",
         "lbl_overlay":            "OBS Overlay:",
         "chk_overlay":            "Show overlay window for streaming",
+        "tab_overlay":            "Overlay",
+        "lbl_overlay_color":      "Font Color:",
+        "lbl_overlay_font":       "Font:",
+        "lbl_overlay_size":       "Font Size:",
     },
 }
 
