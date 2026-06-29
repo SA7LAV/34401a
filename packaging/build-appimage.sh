@@ -3,7 +3,7 @@ set -e
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 APPDIR="$ROOT/dist/AppDir"
-VERSION="1.0.1"
+VERSION="1.0.2"
 OUTPUT="$ROOT/dist/HP_34401A_GUI-${VERSION}-x86_64.AppImage"
 
 echo "--- Baue AppImage ---"

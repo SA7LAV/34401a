@@ -48,6 +48,8 @@ STRINGS = {
         "lbl_decimals":           "Dezimalstellen:",
         "lbl_show_stats":         "Statistik anzeigen:",
         "chk_show_stats":         "MIN / MAX / AVG sichtbar",
+        "lbl_overlay":            "OBS Overlay:",
+        "chk_overlay":            "Overlay-Fenster für Streaming anzeigen",
     },
     "en": {
         "window_title":           "HP 34401A – Multimeter Control",
@@ -92,6 +94,8 @@ STRINGS = {
         "lbl_decimals":           "Decimal Places:",
         "lbl_show_stats":         "Show Statistics:",
         "chk_show_stats":         "MIN / MAX / AVG visible",
+        "lbl_overlay":            "OBS Overlay:",
+        "chk_overlay":            "Show overlay window for streaming",
     },
 }
 

@@ -107,6 +107,9 @@ class SetupDialog(QDialog):
         self._show_stats_chk = QCheckBox(tr("chk_show_stats"))
         form.addRow(QLabel(tr("lbl_show_stats")), self._show_stats_chk)
 
+        self._overlay_chk = QCheckBox(tr("chk_overlay"))
+        form.addRow(QLabel(tr("lbl_overlay")), self._overlay_chk)
+
         return w
 
     def _on_lang_changed(self) -> None:
@@ -140,6 +143,7 @@ class SetupDialog(QDialog):
 
         self._decimals_combo.setCurrentText(str(app_config.decimals))
         self._show_stats_chk.setChecked(app_config.show_stats)
+        self._overlay_chk.setChecked(app_config.overlay_enabled)
 
     def _save_and_accept(self):
         app_config.set("serial", "port",     self._port_combo.currentText())
@@ -153,8 +157,9 @@ class SetupDialog(QDialog):
         app_config.set("measurement", "nplc",        self._nplc_combo.currentText())
         app_config.set("measurement", "autozero",    str(self._autozero_chk.isChecked()))
 
-        app_config.set("display", "decimals",   self._decimals_combo.currentText())
-        app_config.set("display", "show_stats", str(self._show_stats_chk.isChecked()))
+        app_config.set("display", "decimals",        self._decimals_combo.currentText())
+        app_config.set("display", "show_stats",      str(self._show_stats_chk.isChecked()))
+        app_config.set("display", "overlay_enabled", str(self._overlay_chk.isChecked()))
 
         app_config.set("app", "language", self._lang_combo.currentData())
         app_config.save()

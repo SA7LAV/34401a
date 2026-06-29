@@ -4,7 +4,7 @@ set -e
 ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
 DEB_ROOT="$(dirname "$0")"
 BUILD="$ROOT/dist/deb-build"
-PKG="hp34401a-gui_1.0.1_amd64"
+PKG="hp34401a-gui_1.0.2_amd64"
 
 echo "--- Baue .deb ---"
 

@@ -18,8 +18,9 @@ _DEFAULTS = {
         "autozero":    "true",
     },
     "display": {
-        "decimals":   "4",
-        "show_stats": "true",
+        "decimals":        "4",
+        "show_stats":      "true",
+        "overlay_enabled": "false",
     },
     "app": {
         "language": "de",
@@ -78,6 +79,10 @@ class AppConfig:
     @property
     def show_stats(self) -> bool:
         return self.get("display", "show_stats").lower() == "true"
+
+    @property
+    def overlay_enabled(self) -> bool:
+        return self.get("display", "overlay_enabled").lower() == "true"
 
     @property
     def serial_port(self) -> str:

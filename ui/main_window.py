@@ -11,6 +11,7 @@ from ui.mode_panel import ModePanel
 from ui.range_panel import RangePanel
 from ui.connection_dialog import ConnectionDialog
 from ui.setup_dialog import SetupDialog
+from ui.overlay_window import OverlayWindow
 
 BTN = ("QPushButton { background: #1A2040; color: #00C0FF; "
        "border: 1px solid #00C0FF; border-radius: 4px; padding: 6px 14px; }"
@@ -48,8 +49,10 @@ class MainWindow(QMainWindow):
         self.setStyleSheet("background-color: #0A0A1A;")
         self._instrument = Instrument(self)
         self._current_mode = MeasMode.VDC
+        self._overlay = None
         self._build_ui()
         self._wire_signals()
+        self._apply_overlay(app_config.overlay_enabled)
 
     def _build_ui(self):
         central = QWidget()
@@ -131,6 +134,20 @@ class MainWindow(QMainWindow):
         dlg = SetupDialog(self)
         dlg.exec_()
         self._display.apply_display_config()
+        self._apply_overlay(app_config.overlay_enabled)
+
+    def _apply_overlay(self, enabled: bool) -> None:
+        if enabled:
+            if self._overlay is None:
+                self._overlay = OverlayWindow()
+                self._instrument.measurement_received.connect(self._overlay.update_value)
+            self._overlay.set_unit(MODES[self._current_mode].unit)
+            self._overlay.show()
+        else:
+            if self._overlay is not None:
+                self._instrument.measurement_received.disconnect(self._overlay.update_value)
+                self._overlay.close()
+                self._overlay = None
 
     def _on_error(self, msg: str):
         self._status.showMessage(tr("status_error", msg=msg))
@@ -141,6 +158,8 @@ class MainWindow(QMainWindow):
         self._range_panel.set_mode(mode)
         self._display.set_unit(MODES[mode].unit)
         self._display.reset_stats()
+        if self._overlay is not None:
+            self._overlay.set_unit(MODES[mode].unit)
         if self._instrument.is_connected:
             self._instrument.send_command(MODES[mode].conf_cmd)
             self._send_nplc(mode)
@@ -204,6 +223,7 @@ class MainWindow(QMainWindow):
             self._instrument.send_command("SYST:LOC")
 
     def closeEvent(self, event):
+        self._apply_overlay(False)
         self._instrument.stop_sampling()
         if self._instrument.is_connected:
             self._instrument.disconnect()
