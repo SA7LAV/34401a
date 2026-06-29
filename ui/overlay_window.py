@@ -15,7 +15,7 @@ class OverlayWindow(QWidget):
                          Qt.FramelessWindowHint |
                          Qt.WindowStaysOnTopHint |
                          Qt.Tool)
-        self.setAttribute(Qt.WA_TranslucentBackground, True)
+        self.setStyleSheet("background: #00FF00;")
         self._drag_pos = QPoint()
         self._unit = "VDC"
         self._build_ui()
