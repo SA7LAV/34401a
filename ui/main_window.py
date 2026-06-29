@@ -50,6 +50,8 @@ class MainWindow(QMainWindow):
         self._instrument = Instrument(self)
         self._current_mode = MeasMode.VDC
         self._overlay = None
+        self._connect_port = ""
+        self._connect_baud = ""
         self._build_ui()
         self._wire_signals()
         self._apply_overlay(app_config.overlay_enabled)
@@ -107,6 +109,8 @@ class MainWindow(QMainWindow):
     def _wire_signals(self):
         self._instrument.measurement_received.connect(self._display.update_value)
         self._instrument.error_occurred.connect(self._on_error)
+        self._instrument.connected.connect(self._on_connected)
+        self._instrument.connection_failed.connect(self._on_connection_failed)
         self._mode_panel.mode_changed.connect(self._on_mode_changed)
         self._range_panel.range_selected.connect(self._on_range_selected)
         self._setup_btn.clicked.connect(self._on_setup_clicked)
@@ -183,9 +187,9 @@ class MainWindow(QMainWindow):
 
     def _on_connect_clicked(self):
         if self._instrument.is_connected:
-            self._instrument.stop_sampling()
             self._instrument.disconnect()
             self._connect_btn.setText(tr("btn_connect"))
+            self._connect_btn.setEnabled(True)
             self._stop_btn.setEnabled(False)
             self._local_btn.setEnabled(False)
             self._status.showMessage(tr("status_disconnected"))
@@ -195,25 +199,40 @@ class MainWindow(QMainWindow):
         if dlg.exec_() != dlg.Accepted:
             return
 
-        try:
-            self._instrument.connect(
-                dlg.port, dlg.baudrate, dlg.parity, dlg.stopbits,
-                bytesize=dlg.bytesize, timeout=dlg.timeout,
-            )
-            self._instrument.send_command("SYST:REM")
-            az = "ON" if app_config.autozero else "OFF"
-            self._instrument.send_command(f"SENS:ZERO:AUTO {az}")
-            self._instrument.send_command(MODES[self._current_mode].conf_cmd)
-            self._send_nplc(self._current_mode)
-            self._instrument.start_sampling()
-            self._connect_btn.setText(tr("btn_disconnect"))
-            self._stop_btn.setEnabled(True)
-            self._local_btn.setEnabled(True)
-            self._status.showMessage(
-                tr("status_connected", port=dlg.port, baudrate=dlg.baudrate)
-            )
-        except Exception as e:
-            QMessageBox.critical(self, tr("dlg_conn_error_title"), str(e))
+        self._connect_port = dlg.port
+        self._connect_baud = dlg.baudrate
+        self._connect_btn.setEnabled(False)
+        self._status.showMessage(tr("status_connecting"))
+
+        az = "ON" if app_config.autozero else "OFF"
+        nplc_cmd = NPLC_CMD.get(self._current_mode, "")
+        nplc_cmd = nplc_cmd.format(n=app_config.nplc) if nplc_cmd else ""
+        setup_cmds = [c for c in [
+            "SYST:REM",
+            f"SENS:ZERO:AUTO {az}",
+            MODES[self._current_mode].conf_cmd,
+            nplc_cmd,
+        ] if c]
+
+        self._instrument.connect_async(
+            dlg.port, dlg.baudrate, dlg.parity, dlg.stopbits,
+            bytesize=dlg.bytesize, timeout=dlg.timeout,
+            setup_cmds=setup_cmds,
+        )
+
+    def _on_connected(self):
+        self._connect_btn.setText(tr("btn_disconnect"))
+        self._connect_btn.setEnabled(True)
+        self._stop_btn.setEnabled(True)
+        self._local_btn.setEnabled(True)
+        self._status.showMessage(
+            tr("status_connected", port=self._connect_port, baudrate=self._connect_baud)
+        )
+
+    def _on_connection_failed(self, msg: str):
+        self._connect_btn.setEnabled(True)
+        self._status.showMessage(tr("status_not_connected"))
+        QMessageBox.critical(self, tr("dlg_conn_error_title"), msg)
 
     def _on_stop_clicked(self):
         self._instrument.stop_sampling()
