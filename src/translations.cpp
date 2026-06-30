@@ -5,7 +5,7 @@ using StringTable = QMap<QString, LangMap>;
 
 static const StringTable STRINGS = {
     {"de", {
-        {"window_title",         "HP 34401A – Multimeter Control"},
+        {"window_title",         "HP/AGILENT/KEYSIGHT 34401A – Multimeter Control"},
         {"label_function",       "FUNKTION"},
         {"label_range",          "BEREICH"},
         {"btn_connect",          "Verbinden"},
@@ -56,7 +56,7 @@ static const StringTable STRINGS = {
         {"lbl_overlay_size",     "Schriftgröße:"},
     }},
     {"en", {
-        {"window_title",         "HP 34401A – Multimeter Control"},
+        {"window_title",         "HP/AGILENT/KEYSIGHT 34401A – Multimeter Control"},
         {"label_function",       "FUNCTION"},
         {"label_range",          "RANGE"},
         {"btn_connect",          "Connect"},

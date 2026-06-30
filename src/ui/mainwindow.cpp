@@ -102,6 +102,9 @@ void MainWindow::buildUi()
     m_status = new QStatusBar;
     m_status->setStyleSheet("color: #6080A0;");
     m_status->showMessage(tl("status_not_connected"));
+    auto* verLabel = new QLabel("v" APP_VERSION);
+    verLabel->setStyleSheet("color: #405060; font-size: 10px; padding-right: 4px;");
+    m_status->addPermanentWidget(verLabel);
     setStatusBar(m_status);
     setWindowTitle(tl("window_title"));
 }

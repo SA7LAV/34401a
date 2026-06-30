@@ -26,6 +26,8 @@ qt_add_executable(hp34401a
 
 target_include_directories(hp34401a PRIVATE src)
 
+target_compile_definitions(hp34401a PRIVATE APP_VERSION="${PROJECT_VERSION}")
+
 target_link_libraries(hp34401a PRIVATE Qt6::Widgets Qt6::SerialPort)
 
 install(TARGETS hp34401a DESTINATION bin)

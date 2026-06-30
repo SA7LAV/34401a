@@ -40,6 +40,7 @@ void DisplayWidget::buildUi()
     QFont lblFont ("Arial", 10);
 
     auto* mainRow = new QHBoxLayout;
+    mainRow->setSpacing(4);
     m_valLabel    = makeLabel("----", mainFont, DISPLAY_COLOR);
     m_prefixLabel = makeLabel("",     unitFont, DISPLAY_COLOR);
     m_unitLabel   = makeLabel("VDC",  unitFont, DISPLAY_COLOR,
@@ -97,6 +98,7 @@ void DisplayWidget::updateValue(double rawValue)
     auto [valStr, prefix] = formatValue(rawValue, AppConfig::instance().decimals());
     m_valLabel->setText(valStr);
     m_prefixLabel->setText(prefix);
+    m_prefixLabel->setVisible(!prefix.isEmpty());
 
     m_count++;
     m_sum += rawValue;
@@ -127,6 +129,7 @@ void DisplayWidget::resetStats()
     m_count = 0;
     m_valLabel->setText("----");
     m_prefixLabel->setText("");
+    m_prefixLabel->setVisible(false);
     m_minLabel->setText("----");
     m_maxLabel->setText("----");
     m_avgLabel->setText("----");

@@ -26,6 +26,7 @@ OverlayWindow::OverlayWindow(QWidget* parent)
 
     auto* layout = new QHBoxLayout(this);
     layout->setContentsMargins(12, 8, 12, 8);
+    layout->setSpacing(4);
 
     auto mkLbl = [](Qt::Alignment align = Qt::AlignRight | Qt::AlignVCenter) -> QLabel* {
         auto* w = new QLabel;
@@ -90,6 +91,7 @@ void OverlayWindow::updateValue(double rawValue)
     auto [valStr, prefix] = formatValue(rawValue, AppConfig::instance().decimals());
     m_valLabel->setText(valStr);
     m_prefixLabel->setText(prefix);
+    m_prefixLabel->setVisible(!prefix.isEmpty());
 }
 
 void OverlayWindow::setUnit(const QString& unit)
