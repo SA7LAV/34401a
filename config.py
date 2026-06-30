@@ -26,6 +26,8 @@ _DEFAULTS = {
         "color": "#00C0FF",
         "font":  "Courier New",
         "size":  "72",
+        "pos_x": "-1",
+        "pos_y": "-1",
     },
     "app": {
         "language": "de",
@@ -100,6 +102,15 @@ class AppConfig:
     @property
     def overlay_size(self) -> int:
         return int(self.get("overlay", "size"))
+
+    @property
+    def overlay_pos(self) -> tuple:
+        return int(self.get("overlay", "pos_x")), int(self.get("overlay", "pos_y"))
+
+    def save_overlay_pos(self, x: int, y: int):
+        self.set("overlay", "pos_x", str(x))
+        self.set("overlay", "pos_y", str(y))
+        self.save()
 
     @property
     def serial_port(self) -> str:

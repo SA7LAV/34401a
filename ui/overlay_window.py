@@ -1,5 +1,5 @@
-from PyQt5.QtWidgets import QWidget, QHBoxLayout, QLabel
-from PyQt5.QtCore import Qt, QPoint
+from PyQt5.QtWidgets import QWidget, QHBoxLayout, QLabel, QApplication
+from PyQt5.QtCore import Qt, QPoint, QTimer
 from PyQt5.QtGui import QFont
 from models import format_value
 from config import app_config
@@ -13,9 +13,14 @@ class OverlayWindow(QWidget):
                          Qt.Tool)
         self.setStyleSheet("background: #00FF00;")
         self._drag_pos = QPoint()
+        self._save_timer = QTimer(self)
+        self._save_timer.setSingleShot(True)
+        self._save_timer.setInterval(500)
+        self._save_timer.timeout.connect(self._save_pos)
         self._unit = "VDC"
         self._build_ui()
         self.apply_style()
+        self._restore_pos()
 
     def _build_ui(self):
         layout = QHBoxLayout(self)
@@ -24,7 +29,6 @@ class OverlayWindow(QWidget):
         def lbl(text, align=Qt.AlignRight | Qt.AlignVCenter):
             w = QLabel(text)
             w.setAlignment(align)
-            w.setAttribute(Qt.WA_TransparentForMouseEvents, True)
             return w
 
         self._val_label    = lbl("----")
@@ -34,6 +38,22 @@ class OverlayWindow(QWidget):
         layout.addWidget(self._val_label)
         layout.addWidget(self._prefix_label)
         layout.addWidget(self._unit_label)
+
+    def _restore_pos(self):
+        x, y = app_config.overlay_pos
+        if x >= 0 and y >= 0:
+            self.move(x, y)
+        else:
+            screen = QApplication.primaryScreen().availableGeometry()
+            self.move(screen.right() - 400, screen.top() + 20)
+
+    def _save_pos(self):
+        pos = self.frameGeometry().topLeft()
+        app_config.save_overlay_pos(pos.x(), pos.y())
+
+    def moveEvent(self, event):
+        super().moveEvent(event)
+        self._save_timer.start()
 
     def apply_style(self) -> None:
         color    = app_config.overlay_color
@@ -61,7 +81,11 @@ class OverlayWindow(QWidget):
 
     def mousePressEvent(self, event):
         if event.button() == Qt.LeftButton:
-            self._drag_pos = event.globalPos() - self.frameGeometry().topLeft()
+            handle = self.windowHandle()
+            if handle is not None and hasattr(handle, 'startSystemMove'):
+                handle.startSystemMove()
+            else:
+                self._drag_pos = event.globalPos() - self.frameGeometry().topLeft()
             event.accept()
 
     def mouseMoveEvent(self, event):

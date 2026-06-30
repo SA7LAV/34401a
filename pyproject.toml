@@ -4,7 +4,7 @@ build-backend = "setuptools.backends.legacy:build"
 
 [project]
 name = "hp34401a-gui"
-version = "1.0.1"
+version = "1.0.4"
 description = "Linux GUI for HP/Agilent/Keysight 34401A Multimeter"
 authors = [{name = "Kalle Hagen", email = "dev@hammarang-solutions.se"}]
 readme = "README.md"

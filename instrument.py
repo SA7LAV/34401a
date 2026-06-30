@@ -60,9 +60,16 @@ class Instrument(QObject):
                     stopbits=stopbits_map.get(stopbits, serial.STOPBITS_ONE),
                     timeout=timeout,
                     write_timeout=4.0,
+                    rtscts=False,
+                    dsrdtr=False,
+                    xonxoff=False,
                 )
+                self._port.reset_input_buffer()
                 for cmd in (setup_cmds or []):
                     self._port.write(f"{cmd}\r\n".encode())
+                # Give device time to process CONF (mode switch + beep) before first READ?
+                time.sleep(0.3)
+                self._port.reset_input_buffer()
                 self.connected.emit()
                 self._sampling_loop()
             except Exception as e:
@@ -113,12 +120,20 @@ class Instrument(QObject):
     def _sampling_loop(self) -> None:
         while not self._stop_event.is_set() and self.is_connected:
             # drain command queue before each measurement
+            had_conf = False
             while True:
                 try:
                     cmd = self._cmd_queue.get_nowait()
                     self._port.write(f"{cmd}\r\n".encode())
+                    if cmd.startswith("CONF:") or cmd.startswith("MEAS:"):
+                        had_conf = True
                 except queue.Empty:
                     break
+
+            if had_conf:
+                # Wait for device to finish mode switch (beep) before issuing READ?
+                time.sleep(0.3)
+                self._port.reset_input_buffer()
 
             try:
                 self._port.write("READ?\r\n".encode())
