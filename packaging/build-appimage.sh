@@ -2,7 +2,7 @@
 set -e
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-VERSION="1.1.0"
+VERSION="1.1.2"
 APPDIR="$ROOT/dist/AppDir"
 OUTPUT="$ROOT/dist/HP_34401A_GUI-${VERSION}-x86_64.AppImage"
 
@@ -48,6 +48,7 @@ fi
 
 export QMAKE="$(which qmake6 2>/dev/null || which qmake)"
 export OUTPUT
+export NO_STRIP=1
 ARCH=x86_64 "$LINUXDEPLOY" \
     --appdir "$APPDIR" \
     --plugin qt \
