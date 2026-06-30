@@ -17,7 +17,7 @@ Written in **C++17 / Qt6**.
 - **Configurable sampling rate** (50 ms / 200 ms / 500 ms)
 - **NPLC** (integration time) and **Auto-Zero** settings
 - **OBS streaming overlay** – frameless, always-on-top window with chroma-key green background; font, color and size configurable
-- **Language switch** (Deutsch / English) – live, no restart needed
+- **Language switch** (Deutsch / English / Svenska) – live, no restart needed
 - **Adjustable decimal places** (2 / 4 / 6)
 - Settings are saved across sessions
 
@@ -141,7 +141,7 @@ Enable the overlay in **⚙ Setup → Overlay**. A frameless, always-on-top wind
 
 | Tab | Settings |
 |-----|----------|
-| **Language / Sprache** | Switch between Deutsch and English (live preview) |
+| **Language / Sprache** | Switch between Deutsch, English and Svenska (live preview) |
 | **Interface / Schnittstelle** | Port, baud rate, parity, stop bits, data bits, timeout |
 | **Measurement / Messung** | Sampling rate, NPLC (integration time), Auto-Zero |
 | **Display / Anzeige** | Decimal places (2 / 4 / 6), show/hide MIN/MAX/AVG |

@@ -52,6 +52,7 @@ QWidget* SetupDialog::buildLanguageTab()
     m_langCombo = new QComboBox;
     m_langCombo->addItem(tl("lang_de"), "de");
     m_langCombo->addItem(tl("lang_en"), "en");
+    m_langCombo->addItem(tl("lang_sv"), "sv");
     connect(m_langCombo, &QComboBox::currentIndexChanged,
             this, &SetupDialog::onLangChanged);
     form->addRow(new QLabel(tl("lbl_language")), m_langCombo);
