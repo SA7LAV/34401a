@@ -38,11 +38,11 @@ Written in **C++17 / Qt6**.
 
 ### Option 1 – AppImage (any Linux distro, no install needed)
 
-Download `HP_34401A_GUI-1.1.1-x86_64.AppImage` from the [releases page](https://git.cls.net/kalle/Agilent_34401a_GUI/releases).
+Download `HP_34401A_GUI-1.1.4-x86_64.AppImage` from the [releases page](https://github.com/SA7LAV/34401a/releases).
 
 ```bash
-chmod +x HP_34401A_GUI-1.1.1-x86_64.AppImage
-./HP_34401A_GUI-1.1.1-x86_64.AppImage
+chmod +x HP_34401A_GUI-1.1.4-x86_64.AppImage
+./HP_34401A_GUI-1.1.4-x86_64.AppImage
 ```
 
 No dependencies – Qt6 and everything else is bundled.
@@ -51,10 +51,10 @@ No dependencies – Qt6 and everything else is bundled.
 
 ### Option 2 – Arch Linux / CachyOS (.pkg.tar.zst)
 
-Download `hp34401a-gui-1.1.1-1-x86_64.pkg.tar.zst` from the releases page.
+Download `hp34401a-gui-1.1.4-1-x86_64.pkg.tar.zst` from the [releases page](https://github.com/SA7LAV/34401a/releases).
 
 ```bash
-sudo pacman -U hp34401a-gui-1.1.1-1-x86_64.pkg.tar.zst
+sudo pacman -U hp34401a-gui-1.1.4-1-x86_64.pkg.tar.zst
 hp34401a
 ```
 
@@ -62,10 +62,10 @@ hp34401a
 
 ### Option 3 – Ubuntu / Debian (.deb)
 
-Download `hp34401a-gui_1.1.1_amd64.deb` from the releases page.
+Download `hp34401a-gui_1.1.4_amd64.deb` from the [releases page](https://github.com/SA7LAV/34401a/releases).
 
 ```bash
-sudo dpkg -i hp34401a-gui_1.1.1_amd64.deb
+sudo dpkg -i hp34401a-gui_1.1.4_amd64.deb
 hp34401a
 ```
 
@@ -85,7 +85,7 @@ sudo pacman -S cmake ninja qt6-base qt6-serialport
 sudo apt install cmake ninja-build qt6-base-dev libqt6serialport6-dev
 
 git clone https://github.com/SA7LAV/34401a.git
-cd Agilent_34401a_GUI
+cd 34401a
 cmake -B build -DCMAKE_BUILD_TYPE=Release -G Ninja
 ninja -C build
 ./build/hp34401a
@@ -173,29 +173,6 @@ The multimeter must be configured for RS-232/SCPI mode before connecting:
 
 Default serial settings used by this app: 9600 baud, 8N1 (8 data bits, no parity, 1 stop bit).  
 These match the multimeter factory defaults.
-
----
-
-## Building Packages
-
-To build all package formats from source on Arch/CachyOS:
-
-```bash
-# Install build dependencies (one-time)
-sudo pacman -S cmake ninja qt6-base qt6-serialport dpkg
-yay -S appimagetool-bin linuxdeploy-bin linuxdeploy-plugin-qt-bin
-
-# Build all formats (AppImage, .deb, .pkg.tar.zst)
-bash packaging/build-all.sh
-```
-
-**Output files:**
-
-| File | Format | Platform |
-|------|--------|----------|
-| `dist/HP_34401A_GUI-1.1.1-x86_64.AppImage` | AppImage | Any Linux x86_64 |
-| `dist/hp34401a-gui_1.1.1_amd64.deb` | .deb | Ubuntu / Debian |
-| `packaging/hp34401a-gui-1.1.1-1-x86_64.pkg.tar.zst` | pacman | Arch / CachyOS |
 
 ---
 

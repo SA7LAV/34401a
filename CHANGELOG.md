@@ -5,6 +5,15 @@ Versions follow [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [1.1.4] – 2026-06-30
+
+### Changed
+- README: removed "Building Packages" section (packages are distributed pre-built)
+- README: download links updated to GitHub releases page
+- README: fixed `cd` directory name after `git clone`
+
+---
+
 ## [1.1.3] – 2026-06-30
 
 ### Added
