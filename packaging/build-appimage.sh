@@ -2,29 +2,25 @@
 set -e
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+VERSION="1.1.0"
 APPDIR="$ROOT/dist/AppDir"
-VERSION="1.0.4"
 OUTPUT="$ROOT/dist/HP_34401A_GUI-${VERSION}-x86_64.AppImage"
 
-echo "--- Baue AppImage ---"
+echo "--- Build C++ binary ---"
+cmake -B "$ROOT/build" -S "$ROOT" \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DCMAKE_INSTALL_PREFIX=/usr \
+    -GNinja
+ninja -C "$ROOT/build"
 
+echo "--- Assembling AppDir ---"
 rm -rf "$APPDIR"
-mkdir -p \
-    "$APPDIR/usr/bin" \
-    "$APPDIR/usr/share/applications" \
-    "$APPDIR/usr/share/pixmaps"
-
-# PyInstaller-Bundle als Inhalt
-cp -r "$ROOT/dist/hp34401a/." "$APPDIR/usr/bin/"
-chmod +x "$APPDIR/usr/bin/hp34401a"
-
-# Desktop und Icon
-cp "$ROOT/hp34401a.desktop" "$APPDIR/usr/share/applications/"
-cp "$ROOT/hp34401a.desktop" "$APPDIR/hp34401a.desktop"
-cp "$ROOT/assets/hp34401a.png" "$APPDIR/usr/share/pixmaps/"
+DESTDIR="$APPDIR" ninja -C "$ROOT/build" install
+install -Dm644 "$ROOT/assets/hp34401a.png" \
+    "$APPDIR/usr/share/icons/hicolor/128x128/apps/hp34401a.png"
 cp "$ROOT/assets/hp34401a.png" "$APPDIR/hp34401a.png"
+cp "$ROOT/hp34401a.desktop"    "$APPDIR/hp34401a.desktop"
 
-# AppRun-Script
 cat > "$APPDIR/AppRun" << 'EOF'
 #!/bin/sh
 SELF="$(readlink -f "$0")"
@@ -33,19 +29,28 @@ exec "$HERE/usr/bin/hp34401a" "$@"
 EOF
 chmod +x "$APPDIR/AppRun"
 
-# appimagetool herunterladen falls nicht vorhanden
-APPIMAGETOOL=""
-if command -v appimagetool &>/dev/null; then
-    APPIMAGETOOL="appimagetool"
-elif [ -x /tmp/appimagetool ]; then
-    APPIMAGETOOL=/tmp/appimagetool
-else
-    echo "Lade appimagetool herunter..."
-    curl -Lo /tmp/appimagetool \
-        "https://github.com/AppImage/AppImageKit/releases/latest/download/appimagetool-x86_64.AppImage"
-    chmod +x /tmp/appimagetool
-    APPIMAGETOOL=/tmp/appimagetool
+echo "--- Bundling Qt libs with linuxdeploy ---"
+LINUXDEPLOY=/tmp/linuxdeploy-x86_64.AppImage
+PLUGIN=/tmp/linuxdeploy-plugin-qt-x86_64.AppImage
+
+if [ ! -x "$LINUXDEPLOY" ]; then
+    echo "Downloading linuxdeploy..."
+    curl -Lo "$LINUXDEPLOY" \
+        "https://github.com/linuxdeploy/linuxdeploy/releases/latest/download/linuxdeploy-x86_64.AppImage"
+    chmod +x "$LINUXDEPLOY"
+fi
+if [ ! -x "$PLUGIN" ]; then
+    echo "Downloading linuxdeploy-plugin-qt..."
+    curl -Lo "$PLUGIN" \
+        "https://github.com/linuxdeploy/linuxdeploy-plugin-qt/releases/latest/download/linuxdeploy-plugin-qt-x86_64.AppImage"
+    chmod +x "$PLUGIN"
 fi
 
-ARCH=x86_64 "$APPIMAGETOOL" "$APPDIR" "$OUTPUT"
+export QMAKE="$(which qmake6 2>/dev/null || which qmake)"
+export OUTPUT
+ARCH=x86_64 "$LINUXDEPLOY" \
+    --appdir "$APPDIR" \
+    --plugin qt \
+    --output appimage
+
 echo "Fertig: $OUTPUT"

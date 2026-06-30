@@ -2,43 +2,30 @@
 set -e
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-cd "$ROOT"
 
 echo "============================================"
-echo " HP 34401A GUI – Paketierung"
+echo " HP 34401A GUI 1.1.0 – Paketierung"
 echo "============================================"
 echo ""
 
-echo "=== 1/4  Icon erzeugen ==="
-DISPLAY="${DISPLAY:-:0}" QT_QPA_PLATFORM=xcb \
-    python3 packaging/create-icon.py
+echo "=== 1/3  AppImage ==="
+bash "$ROOT/packaging/build-appimage.sh"
 
 echo ""
-echo "=== 2/4  PyInstaller-Bundle ==="
-pip install pyinstaller --quiet
-pyinstaller packaging/hp34401a.spec \
-    --distpath dist \
-    --workpath /tmp/hp34401a-build \
-    --noconfirm
-echo "Bundle: dist/hp34401a/"
+echo "=== 2/3  .deb ==="
+bash "$ROOT/packaging/deb/build-deb.sh"
 
 echo ""
-echo "=== 3/4  AppImage ==="
-bash packaging/build-appimage.sh
-
-echo ""
-echo "=== 4/4  .deb ==="
-bash packaging/deb/build-deb.sh
+echo "=== 3/3  Arch/CachyOS .pkg.tar.zst ==="
+cd "$ROOT/packaging"
+makepkg -f
 
 echo ""
 echo "============================================"
 echo " Ergebnisse:"
 echo "============================================"
 ls -lh \
-    dist/HP_34401A_GUI-*.AppImage \
-    dist/hp34401a-gui_*.deb \
+    "$ROOT/dist/HP_34401A_GUI-"*.AppImage \
+    "$ROOT/dist/hp34401a-gui_"*.deb \
+    "$ROOT/packaging/hp34401a-gui-"*.pkg.tar.zst \
     2>/dev/null || true
-
-echo ""
-echo "Für Arch/CachyOS .pkg.tar.zst:"
-echo "  cd packaging && makepkg -f"

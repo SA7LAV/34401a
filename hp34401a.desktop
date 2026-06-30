@@ -1,11 +1,11 @@
 [Desktop Entry]
-Version=1.0
+Version=1.1
 Name=HP 34401A Multimeter
 Name[de]=HP 34401A Multimeter
 Name[en]=HP 34401A Multimeter
 Comment=Control software for HP/Agilent/Keysight 34401A
 Comment[de]=Steuersoftware für HP/Agilent/Keysight 34401A Multimeter
-Exec=/opt/hp34401a/hp34401a
+Exec=hp34401a
 Icon=hp34401a
 Terminal=false
 Type=Application
