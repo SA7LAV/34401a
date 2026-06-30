@@ -224,5 +224,5 @@ MIT – see source repository for details.
 
 ## Author
 
-Kalle Hagen – [dev@hammarang-solutions.se](mailto:dev@hammarang-solutions.se)  
-Repository: [git.cls.net/kalle/Agilent_34401a_GUI](https://git.cls.net/kalle/Agilent_34401a_GUI)
+Kalle Hagen – [kalle@sa7lav.se](mailto:kalle@sa7lav.se)  
+Repository: [github.com/SA7LAV/34401a](https://github.com/SA7LAV/34401a)

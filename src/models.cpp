@@ -1,6 +1,11 @@
+/**
+ * @file models.cpp
+ * @brief MODES table and formatValue() implementation.
+ */
 #include "models.h"
 #include <cmath>
 
+// Convenience macro for building RangeList entries; undefined after MODES.
 #define R(label, cmd) QPair<QString,QString>{label, cmd}
 
 const QMap<MeasMode, ModeConfig> MODES = {
@@ -73,6 +78,9 @@ const QMap<MeasMode, ModeConfig> MODES = {
 
 #undef R
 
+// SI prefix table ordered from largest to smallest.  The threshold == 1e-12
+// entry acts as the catch-all: any value smaller than 1 pico- (or exactly 0)
+// matches here and is displayed with the "p" prefix.
 static const struct { double threshold; const char* prefix; } SI_PREFIXES[] = {
     {1e12,  "T"}, {1e9,  "G"}, {1e6,  "M"}, {1e3,  "k"},
     {1.0,   ""},  {1e-3, "m"}, {1e-6, u8"µ"}, {1e-9, "n"}, {1e-12, "p"},

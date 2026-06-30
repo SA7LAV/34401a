@@ -1,6 +1,28 @@
+/**
+ * @file dialogstyle.h
+ * @brief Shared Qt stylesheet for all modal dialogs.
+ *
+ * Returns a CSS string that applies the application's dark blue theme to
+ * QDialog, QTabWidget, QComboBox, QCheckBox, and QDialogButtonBox.  Include
+ * this header and call @c setStyleSheet(dialogStyle()) in any new dialog's
+ * constructor to keep the visual style consistent.
+ *
+ * Colour palette used:
+ *  - Background:  #12182E (darkest), #0E1428 (dark), #1A2040 (medium)
+ *  - Border:      #2A3560
+ *  - Text:        #D0E4F4 (primary), #8AAAC8 (secondary)
+ *  - Accent/active: #00C0FF
+ *  - Hover:       #203060
+ */
 #pragma once
 #include <QString>
 
+/**
+ * @brief Returns the shared dialog stylesheet string.
+ *
+ * The stylesheet is generated inline (no resource file dependency) so it can
+ * be called before the Qt resource system is initialised.
+ */
 inline QString dialogStyle()
 {
     return R"(

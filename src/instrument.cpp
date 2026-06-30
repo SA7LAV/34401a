@@ -1,3 +1,9 @@
+/**
+ * @file instrument.cpp
+ * @brief InstrumentWorker and Instrument implementation.
+ *
+ * See instrument.h for the threading model and design rationale.
+ */
 #include "instrument.h"
 #include "config.h"
 #include <QThread>
@@ -49,7 +55,9 @@ void InstrumentWorker::connectDevice(const QString& port, int baudrate,
         m_port->waitForBytesWritten(4000);
     }
 
-    // Wait for mode switch beep before first READ?
+    // The 34401A emits a short beep and is briefly busy after a CONF: command.
+    // 300 ms is sufficient to let the instrument settle; clearing the buffer
+    // discards any partial response or echo that arrived during that window.
     QThread::msleep(300);
     m_port->clear();
 
@@ -61,6 +69,8 @@ void InstrumentWorker::connectDevice(const QString& port, int baudrate,
     connect(m_timer, &QTimer::timeout, this, &InstrumentWorker::doOneMeasurement);
     m_timer->start(0); // first measurement immediately
 
+    // timeoutMs is read per-measurement from AppConfig so it reflects any
+    // changes made in the Setup dialog without requiring a reconnect.
     Q_UNUSED(timeoutMs)
 }
 
@@ -102,6 +112,9 @@ void InstrumentWorker::doOneMeasurement()
 
     if (gotData) {
         QByteArray resp = m_port->readLine().trimmed();
+        // +9.9E+37 is the SCPI overrange sentinel returned by the 34401A when
+        // the input exceeds the selected measurement range.  Discard it silently
+        // rather than propagating a meaningless large number to the display.
         if (!resp.isEmpty() && !resp.contains("E+37")) {
             bool ok;
             double val = resp.toDouble(&ok);
@@ -131,6 +144,8 @@ void InstrumentWorker::disconnectDevice()
 {
     stopSampling();
     if (m_port && m_port->isOpen()) {
+        // SYST:LOC releases the instrument from remote control so the front
+        // panel becomes active again after the application disconnects.
         m_port->write("SYST:LOC\r\n");
         m_port->waitForBytesWritten(2000);
         m_port->close();
