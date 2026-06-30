@@ -84,7 +84,7 @@ sudo pacman -S cmake ninja qt6-base qt6-serialport
 # Ubuntu / Debian (24.04+)
 sudo apt install cmake ninja-build qt6-base-dev libqt6serialport6-dev
 
-git clone https://git.cls.net/kalle/Agilent_34401a_GUI.git
+git clone https://github.com/SA7LAV/34401a.git
 cd Agilent_34401a_GUI
 cmake -B build -DCMAKE_BUILD_TYPE=Release -G Ninja
 ninja -C build
