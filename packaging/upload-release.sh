@@ -8,7 +8,7 @@ TOKEN="${1:?Usage: $0 <api-token>}"
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 API="https://git.cls.net/api/v1"
 REPO="kalle/Agilent_34401a_GUI"
-TAG="v1.1.0"
+TAG="v1.1.1"
 
 echo "--- Lade Release-ID für $TAG ---"
 RELEASE_ID=$(curl -sf "$API/repos/$REPO/releases/tags/$TAG" \
@@ -25,9 +25,9 @@ upload() {
         | python3 -c "import sys,json; d=json.load(sys.stdin); print('OK:', d.get('name',''), '(', d.get('size',''), 'bytes)')"
 }
 
-upload "$ROOT/dist/HP_34401A_GUI-1.1.0-x86_64.AppImage"
-upload "$ROOT/dist/hp34401a-gui_1.1.0_amd64.deb"
-upload "$ROOT/packaging/hp34401a-gui-1.1.0-1-x86_64.pkg.tar.zst"
+upload "$ROOT/dist/HP_34401A_GUI-1.1.1-x86_64.AppImage"
+upload "$ROOT/dist/hp34401a-gui_1.1.1_amd64.deb"
+upload "$ROOT/packaging/hp34401a-gui-1.1.1-1-x86_64.pkg.tar.zst"
 
 echo ""
 echo "Fertig. Release: https://git.cls.net/$REPO/releases/tag/$TAG"
