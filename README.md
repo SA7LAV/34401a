@@ -3,6 +3,8 @@
 Linux control software for the HP/Agilent/Keysight 34401A digital multimeter.  
 Supports all 10 measurement modes with live display, MIN/MAX/AVG statistics and configurable settings.
 
+Written in **C++17 / Qt6**.
+
 ![Screenshot](assets/screenshot.png)
 
 ---
@@ -14,6 +16,7 @@ Supports all 10 measurement modes with live display, MIN/MAX/AVG statistics and 
 - **MIN / MAX / AVG** statistics
 - **Configurable sampling rate** (50 ms / 200 ms / 500 ms)
 - **NPLC** (integration time) and **Auto-Zero** settings
+- **OBS streaming overlay** – frameless, always-on-top window with chroma-key green background; font, color and size configurable
 - **Language switch** (Deutsch / English) – live, no restart needed
 - **Adjustable decimal places** (2 / 4 / 6)
 - Settings are saved across sessions
@@ -35,23 +38,23 @@ Supports all 10 measurement modes with live display, MIN/MAX/AVG statistics and 
 
 ### Option 1 – AppImage (any Linux distro, no install needed)
 
-Download `HP_34401A_GUI-1.0.0-x86_64.AppImage` from the [releases page](https://git.cls.net/kalle/Agilent_34401a_GUI/releases).
+Download `HP_34401A_GUI-1.1.1-x86_64.AppImage` from the [releases page](https://git.cls.net/kalle/Agilent_34401a_GUI/releases).
 
 ```bash
-chmod +x HP_34401A_GUI-1.0.0-x86_64.AppImage
-./HP_34401A_GUI-1.0.0-x86_64.AppImage
+chmod +x HP_34401A_GUI-1.1.1-x86_64.AppImage
+./HP_34401A_GUI-1.1.1-x86_64.AppImage
 ```
 
-No Python, no dependencies – everything is bundled.
+No dependencies – Qt6 and everything else is bundled.
 
 ---
 
 ### Option 2 – Arch Linux / CachyOS (.pkg.tar.zst)
 
-Download `hp34401a-gui-1.0.0-1-x86_64.pkg.tar.zst` from the releases page.
+Download `hp34401a-gui-1.1.1-1-x86_64.pkg.tar.zst` from the releases page.
 
 ```bash
-sudo pacman -U hp34401a-gui-1.0.0-1-x86_64.pkg.tar.zst
+sudo pacman -U hp34401a-gui-1.1.1-1-x86_64.pkg.tar.zst
 hp34401a
 ```
 
@@ -59,10 +62,10 @@ hp34401a
 
 ### Option 3 – Ubuntu / Debian (.deb)
 
-Download `hp34401a-gui_1.0.0_amd64.deb` from the releases page.
+Download `hp34401a-gui_1.1.1_amd64.deb` from the releases page.
 
 ```bash
-sudo dpkg -i hp34401a-gui_1.0.0_amd64.deb
+sudo dpkg -i hp34401a-gui_1.1.1_amd64.deb
 hp34401a
 ```
 
@@ -72,13 +75,20 @@ After installation the app also appears in your application menu under **Science
 
 ### Option 4 – Build from source
 
-Requirements: Python 3.10+, PyQt5, pyserial
+Requirements: CMake 3.22+, Ninja, Qt6 (Widgets + SerialPort)
 
 ```bash
+# Arch / CachyOS
+sudo pacman -S cmake ninja qt6-base qt6-serialport
+
+# Ubuntu / Debian (24.04+)
+sudo apt install cmake ninja-build qt6-base-dev libqt6serialport6-dev
+
 git clone https://git.cls.net/kalle/Agilent_34401a_GUI.git
 cd Agilent_34401a_GUI
-pip install PyQt5 pyserial
-python3 main.py
+cmake -B build -DCMAKE_BUILD_TYPE=Release -G Ninja
+ninja -C build
+./build/hp34401a
 ```
 
 ---
@@ -116,12 +126,16 @@ Log out and back in for the change to take effect.
 ### Measurement modes
 
 Click any button in the **FUNCTION** panel on the left to switch modes.  
-The **RANGE** buttons at the bottom update automatically for the selected mode.  
+The **RANGE** buttons update automatically for the selected mode.  
 **Auto** selects the optimal range automatically.
 
 ### MIN / MAX / AVG
 
 Statistics are calculated from the moment you connect. Click a different **FUNCTION** to reset them.
+
+### OBS Overlay
+
+Enable the overlay in **⚙ Setup → Overlay**. A frameless, always-on-top window appears with a chroma-key green background – ready to key out in OBS. The window is draggable. Font family, color and size are configurable.
 
 ### Setup dialog (⚙ Setup)
 
@@ -131,6 +145,7 @@ Statistics are calculated from the moment you connect. Click a different **FUNCT
 | **Interface / Schnittstelle** | Port, baud rate, parity, stop bits, data bits, timeout |
 | **Measurement / Messung** | Sampling rate, NPLC (integration time), Auto-Zero |
 | **Display / Anzeige** | Decimal places (2 / 4 / 6), show/hide MIN/MAX/AVG |
+| **Overlay** | Enable/disable, font, color, size |
 
 Settings are saved to `~/.config/hp34401a/serial_config.ini`.
 
@@ -167,24 +182,20 @@ To build all package formats from source on Arch/CachyOS:
 
 ```bash
 # Install build dependencies (one-time)
-pip install pyinstaller
-sudo pacman -S dpkg
-yay -S appimagetool-bin
+sudo pacman -S cmake ninja qt6-base qt6-serialport dpkg
+yay -S appimagetool-bin linuxdeploy-bin linuxdeploy-plugin-qt-bin
 
-# Build everything
+# Build all formats (AppImage, .deb, .pkg.tar.zst)
 bash packaging/build-all.sh
-
-# Additionally build the .pkg.tar.zst
-cd packaging && makepkg -f
 ```
 
 **Output files:**
 
 | File | Format | Platform |
 |------|--------|----------|
-| `dist/HP_34401A_GUI-1.0.0-x86_64.AppImage` | AppImage | Any Linux |
-| `dist/hp34401a-gui_1.0.0_amd64.deb` | .deb | Ubuntu / Debian |
-| `packaging/hp34401a-gui-1.0.0-1-x86_64.pkg.tar.zst` | pacman | Arch / CachyOS |
+| `dist/HP_34401A_GUI-1.1.1-x86_64.AppImage` | AppImage | Any Linux x86_64 |
+| `dist/hp34401a-gui_1.1.1_amd64.deb` | .deb | Ubuntu / Debian |
+| `packaging/hp34401a-gui-1.1.1-1-x86_64.pkg.tar.zst` | pacman | Arch / CachyOS |
 
 ---
 
