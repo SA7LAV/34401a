@@ -4,7 +4,7 @@ set -e
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 
 echo "============================================"
-echo " HP 34401A GUI 1.1.4 – Paketierung"
+echo " HP 34401A GUI 1.1.5 – Paketierung"
 echo "============================================"
 echo ""
 

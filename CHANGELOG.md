@@ -5,6 +5,21 @@ Versions follow [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [1.1.5] – 2026-07-02
+
+### Added
+- Configurable overlay background colour (Setup → Overlay), defaulting to
+  chroma-key green `#00FF00`
+
+### Fixed
+- Overrange readings (`+9.9E+37`) were discarded silently, leaving the display
+  frozen on the last valid value. An overload is now shown explicitly,
+  mirroring the front panel: `OVL.D` (2W/4W resistance), `OPEN`
+  (diode/continuity), `OVLD` (all other functions), on both the main display
+  and the OBS overlay
+
+---
+
 ## [1.1.4] – 2026-06-30
 
 ### Changed

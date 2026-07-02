@@ -4,7 +4,7 @@ set -e
 ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
 DEB_ROOT="$(dirname "$0")"
 BUILD="$ROOT/dist/deb-build"
-VERSION="1.1.4"
+VERSION="1.1.5"
 PKG="hp34401a-gui_${VERSION}_amd64"
 
 echo "--- Build C++ binary ---"
