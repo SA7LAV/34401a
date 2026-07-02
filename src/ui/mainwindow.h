@@ -81,6 +81,14 @@ private:
     void onModeChanged(MeasMode mode);
     /** @brief Sends the selected range command, or AUTO if @p scpiCmd is empty. */
     void onRangeSelected(const QString& scpiCmd);
+    /**
+     * @brief Shows a mode-appropriate overload indicator on the display/overlay.
+     *
+     * Triggered by Instrument::overloadDetected(). The text follows the
+     * front-panel convention: "OVL.D" for resistance, "OPEN" for diode and
+     * continuity, and "OVLD" for all other functions.
+     */
+    void onOverload();
     void onConnected();
     void onConnectionFailed(const QString& msg);
     void onError(const QString& msg);

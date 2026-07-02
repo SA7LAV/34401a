@@ -7,6 +7,7 @@
 #include "instrument.h"
 #include "config.h"
 #include <QThread>
+#include <cmath>
 
 // ──────────────────────────────── Worker ─────────────────────────────────────
 
@@ -112,13 +113,19 @@ void InstrumentWorker::doOneMeasurement()
 
     if (gotData) {
         QByteArray resp = m_port->readLine().trimmed();
-        // +9.9E+37 is the SCPI overrange sentinel returned by the 34401A when
-        // the input exceeds the selected measurement range.  Discard it silently
-        // rather than propagating a meaningless large number to the display.
-        if (!resp.isEmpty() && !resp.contains("E+37")) {
+        if (!resp.isEmpty()) {
             bool ok;
             double val = resp.toDouble(&ok);
-            if (ok) emit measurementReceived(val);
+            if (ok) {
+                // +9.9E+37 is the SCPI overrange sentinel returned by the 34401A
+                // when the input exceeds the selected measurement range.  Report
+                // it as an explicit overload rather than propagating a meaningless
+                // large number (or silently freezing on the last valid reading).
+                if (std::abs(val) >= OVERLOAD_SENTINEL)
+                    emit overloadDetected();
+                else
+                    emit measurementReceived(val);
+            }
         }
     }
 
@@ -165,6 +172,8 @@ Instrument::Instrument(QObject* parent) : QObject(parent)
 
     connect(m_worker, &InstrumentWorker::measurementReceived,
             this,     &Instrument::measurementReceived);
+    connect(m_worker, &InstrumentWorker::overloadDetected,
+            this,     &Instrument::overloadDetected);
     connect(m_worker, &InstrumentWorker::errorOccurred,
             this,     &Instrument::errorOccurred);
     connect(m_worker, &InstrumentWorker::connectedSignal,

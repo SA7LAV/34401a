@@ -59,6 +59,18 @@ public slots:
      */
     void updateValue(double rawValue);
 
+    /**
+     * @brief Shows an overload indicator instead of a numeric value.
+     *
+     * Called when the instrument reports an overrange condition. The main
+     * readout is replaced by @p text (e.g. "OVL.D" or "OPEN") and the unit
+     * label is hidden; statistics are left untouched. The next call to
+     * updateValue() restores normal numeric display.
+     *
+     * @param text  Overload text to display (already localised/mode-specific).
+     */
+    void showOverload(const QString& text);
+
 private:
     /** @brief Constructs the two-zone layout. */
     void buildUi();

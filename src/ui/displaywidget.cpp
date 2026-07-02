@@ -99,6 +99,7 @@ void DisplayWidget::updateValue(double rawValue)
     m_valLabel->setText(valStr);
     m_prefixLabel->setText(prefix);
     m_prefixLabel->setVisible(!prefix.isEmpty());
+    m_unitLabel->setVisible(true); // restore after a possible overload display
 
     m_count++;
     m_sum += rawValue;
@@ -115,10 +116,19 @@ void DisplayWidget::updateValue(double rawValue)
     m_avgLabel->setText(fmt(avg));
 }
 
+void DisplayWidget::showOverload(const QString& text)
+{
+    m_valLabel->setText(text);
+    m_prefixLabel->setText("");
+    m_prefixLabel->setVisible(false);
+    m_unitLabel->setVisible(false);
+}
+
 void DisplayWidget::setUnit(const QString& unit)
 {
     m_unit = unit;
     m_unitLabel->setText(unit);
+    m_unitLabel->setVisible(true); // may have been hidden by a prior overload
 }
 
 void DisplayWidget::resetStats()

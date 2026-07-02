@@ -31,6 +31,15 @@
 #include <atomic>
 
 /**
+ * @brief Threshold above which a reading is treated as an overrange condition.
+ *
+ * The 34401A returns the SCPI sentinel +9.9E+37 for an overrange input.  Any
+ * valid measurement is orders of magnitude below this, so a simple magnitude
+ * comparison reliably distinguishes the sentinel from real data.
+ */
+constexpr double OVERLOAD_SENTINEL = 9.8e37;
+
+/**
  * @brief Worker object that performs all serial I/O on a private thread.
  *
  * Instantiated and moved to a QThread by Instrument.  All public slots are
@@ -88,6 +97,15 @@ signals:
     /** @brief Emitted for each valid numeric reading from the instrument. */
     void measurementReceived(double value);
 
+    /**
+     * @brief Emitted when the instrument reports an overrange condition.
+     *
+     * The 34401A returns the SCPI sentinel +9.9E+37 when the input exceeds the
+     * selected measurement range.  Consumers should display an overload
+     * indicator (e.g. "OVL.D" / "OPEN") instead of a numeric value.
+     */
+    void overloadDetected();
+
     /** @brief Emitted when a read/write error occurs; stops sampling. */
     void errorOccurred(const QString& msg);
 
@@ -102,8 +120,8 @@ private slots:
      * @brief Fires on each timer tick; flushes the command queue, sends
      *        "READ?", and parses the response.
      *
-     * Overrange readings (+9.9E+37) returned by the instrument are silently
-     * discarded; all other numeric responses are emitted via
+     * Overrange readings (+9.9E+37) returned by the instrument are reported via
+     * overloadDetected(); all other numeric responses are emitted via
      * measurementReceived().
      */
     void doOneMeasurement();
@@ -178,6 +196,9 @@ public:
 signals:
     /** @brief Re-emitted from InstrumentWorker::measurementReceived. */
     void measurementReceived(double value);
+
+    /** @brief Re-emitted from InstrumentWorker::overloadDetected. */
+    void overloadDetected();
 
     /** @brief Re-emitted from InstrumentWorker::errorOccurred. */
     void errorOccurred(const QString& msg);

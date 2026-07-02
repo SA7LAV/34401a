@@ -38,6 +38,15 @@ static const QMap<MeasMode, QString> AUTO_RANGE_CMD = {
     {MeasMode::PERIOD, "PER:VOLT:RANG:AUTO ON"},
 };
 
+// Overload indicators mirroring the 34401A front-panel annunciators.  Modes not
+// listed here fall back to the generic "OVLD".
+static const QMap<MeasMode, QString> OVERLOAD_TEXT = {
+    {MeasMode::OHM2,  "OVL.D"},
+    {MeasMode::OHM4,  "OVL.D"},
+    {MeasMode::DIODE, "OPEN"},
+    {MeasMode::CONT,  "OPEN"},
+};
+
 static const QMap<MeasMode, QString> NPLC_CMD = {
     {MeasMode::VDC,    "SENS:VOLT:DC:NPLC %1"},
     {MeasMode::ADC,    "SENS:CURR:DC:NPLC %1"},
@@ -113,6 +122,8 @@ void MainWindow::wireSignals()
 {
     connect(m_instrument, &Instrument::measurementReceived,
             m_display,   &DisplayWidget::updateValue);
+    connect(m_instrument, &Instrument::overloadDetected,
+            this, &MainWindow::onOverload);
     connect(m_instrument, &Instrument::errorOccurred,
             this, &MainWindow::onError);
     connect(m_instrument, &Instrument::connected,
@@ -274,6 +285,13 @@ void MainWindow::onRangeSelected(const QString& scpiCmd)
         if (it != AUTO_RANGE_CMD.end())
             m_instrument->sendCommand(*it);
     }
+}
+
+void MainWindow::onOverload()
+{
+    const QString text = OVERLOAD_TEXT.value(m_currentMode, "OVLD");
+    m_display->showOverload(text);
+    if (m_overlay) m_overlay->showOverload(text);
 }
 
 void MainWindow::onStopClicked()
