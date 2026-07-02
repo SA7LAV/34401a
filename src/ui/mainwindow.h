@@ -71,10 +71,23 @@ private:
     /** @brief Re-applies all translatable strings after a language change. */
     void retranslateUi();
 
+    /**
+     * @brief Updates the Stop/Resume button label, colour, and m_sampling flag.
+     *
+     * @param active  true → button shows "Stop" (red); false → "Resume" (blue).
+     *
+     * Does not change the button's enabled state; callers manage that separately.
+     */
+    void setSamplingState(bool active);
+
     // -- Slot handlers --
     void onSetupClicked();
     void onConnectClicked();
-    void onStopClicked();
+    /**
+     * @brief Toggles measurement polling: stops it when running, resumes it
+     *        when stopped — without disconnecting.
+     */
+    void onStopResumeClicked();
     /** @brief Sends SYST:LOC to return the instrument to local (front-panel) control. */
     void onLocalClicked();
     /** @brief Switches mode, updates the range panel, resets stats, sends SCPI. */
@@ -108,6 +121,7 @@ private:
     QStatusBar*    m_status{nullptr};
 
     MeasMode m_currentMode{MeasMode::VDC};
+    bool     m_sampling{false}; ///< true while the polling loop is active
     QString  m_connectPort; ///< Cached for the "Connected: port @ baud" status message
     QString  m_connectBaud; ///< Cached for the "Connected: port @ baud" status message
 };

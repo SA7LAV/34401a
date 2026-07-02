@@ -65,10 +65,7 @@ void InstrumentWorker::connectDevice(const QString& port, int baudrate,
     connected.store(true);
     emit connectedSignal();
 
-    m_timer = new QTimer(this);
-    m_timer->setSingleShot(true);
-    connect(m_timer, &QTimer::timeout, this, &InstrumentWorker::doOneMeasurement);
-    m_timer->start(0); // first measurement immediately
+    startSampling(); // first measurement fires immediately
 
     // timeoutMs is read per-measurement from AppConfig so it reflects any
     // changes made in the Setup dialog without requiring a reconnect.
@@ -147,6 +144,17 @@ void InstrumentWorker::stopSampling()
     }
 }
 
+void InstrumentWorker::startSampling()
+{
+    if (!m_port || !m_port->isOpen()) return;
+    if (m_timer) return; // already sampling
+
+    m_timer = new QTimer(this);
+    m_timer->setSingleShot(true);
+    connect(m_timer, &QTimer::timeout, this, &InstrumentWorker::doOneMeasurement);
+    m_timer->start(0); // resume immediately
+}
+
 void InstrumentWorker::disconnectDevice()
 {
     stopSampling();
@@ -217,6 +225,12 @@ void Instrument::sendCommand(const QString& cmd)
 void Instrument::stopSampling()
 {
     QMetaObject::invokeMethod(m_worker, [this]() { m_worker->stopSampling(); },
+                              Qt::QueuedConnection);
+}
+
+void Instrument::startSampling()
+{
+    QMetaObject::invokeMethod(m_worker, [this]() { m_worker->startSampling(); },
                               Qt::QueuedConnection);
 }
 

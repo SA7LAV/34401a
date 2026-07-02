@@ -93,6 +93,14 @@ public slots:
     /** @brief Stops the polling timer without closing the serial port. */
     void stopSampling();
 
+    /**
+     * @brief (Re)starts the polling timer on an already-open connection.
+     *
+     * Used to resume measurements after stopSampling() without reconnecting.
+     * Does nothing if the port is closed or sampling is already running.
+     */
+    void startSampling();
+
 signals:
     /** @brief Emitted for each valid numeric reading from the instrument. */
     void measurementReceived(double value);
@@ -184,6 +192,9 @@ public:
 
     /** @brief Pauses measurement polling without closing the serial connection. */
     void stopSampling();
+
+    /** @brief Resumes measurement polling on an already-open connection. */
+    void startSampling();
 
     /**
      * @brief Returns the list of available serial port device paths.

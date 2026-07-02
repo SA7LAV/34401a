@@ -138,7 +138,7 @@ void MainWindow::wireSignals()
 
     connect(m_setupBtn,   &QPushButton::clicked, this, &MainWindow::onSetupClicked);
     connect(m_connectBtn, &QPushButton::clicked, this, &MainWindow::onConnectClicked);
-    connect(m_stopBtn,    &QPushButton::clicked, this, &MainWindow::onStopClicked);
+    connect(m_stopBtn,    &QPushButton::clicked, this, &MainWindow::onStopResumeClicked);
     connect(m_localBtn,   &QPushButton::clicked, this, &MainWindow::onLocalClicked);
 
     connect(&Translations::instance(), &Translations::languageChanged,
@@ -153,7 +153,7 @@ void MainWindow::retranslateUi()
     m_lblFunction->setText(tl("label_function"));
     m_lblRange->setText(tl("label_range"));
     m_setupBtn->setText(tl("btn_setup"));
-    m_stopBtn->setText(tl("btn_stop"));
+    m_stopBtn->setText(m_sampling ? tl("btn_stop") : tl("btn_resume"));
     m_localBtn->setText(tl("btn_local"));
     if (m_instrument->isConnected()) {
         m_connectBtn->setText(tl("btn_disconnect"));
@@ -207,6 +207,7 @@ void MainWindow::onConnectClicked()
         m_instrument->disconnectDevice();
         m_connectBtn->setText(tl("btn_connect"));
         m_connectBtn->setEnabled(true);
+        setSamplingState(true); // reset label to "Stop" for the next session
         m_stopBtn->setEnabled(false);
         m_localBtn->setEnabled(false);
         m_status->showMessage(tl("status_disconnected"));
@@ -242,6 +243,7 @@ void MainWindow::onConnected()
     m_connectBtn->setText(tl("btn_disconnect"));
     m_connectBtn->setEnabled(true);
     m_stopBtn->setEnabled(true);
+    setSamplingState(true);
     m_localBtn->setEnabled(true);
     m_status->showMessage(
         Translations::instance().tr("status_connected",
@@ -257,9 +259,10 @@ void MainWindow::onConnectionFailed(const QString& msg)
 
 void MainWindow::onError(const QString& msg)
 {
+    m_instrument->stopSampling();
+    setSamplingState(false);
     m_status->showMessage(
         Translations::instance().tr("status_error", {{"msg", msg}}));
-    onStopClicked();
 }
 
 void MainWindow::onModeChanged(MeasMode mode)
@@ -294,11 +297,24 @@ void MainWindow::onOverload()
     if (m_overlay) m_overlay->showOverload(text);
 }
 
-void MainWindow::onStopClicked()
+void MainWindow::setSamplingState(bool active)
 {
-    m_instrument->stopSampling();
-    m_stopBtn->setEnabled(false);
-    m_status->showMessage(tl("status_stopped"));
+    m_sampling = active;
+    m_stopBtn->setText(active ? tl("btn_stop") : tl("btn_resume"));
+    m_stopBtn->setStyleSheet(active ? STOP_SS : BTN_SS);
+}
+
+void MainWindow::onStopResumeClicked()
+{
+    if (m_sampling) {
+        m_instrument->stopSampling();
+        setSamplingState(false);
+        m_status->showMessage(tl("status_stopped"));
+    } else {
+        m_instrument->startSampling();
+        setSamplingState(true);
+        m_status->showMessage(tl("status_measuring"));
+    }
 }
 
 void MainWindow::onLocalClicked()
