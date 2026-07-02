@@ -92,6 +92,14 @@ public:
     /** @brief Overlay text colour as a CSS hex string (e.g. "#00C0FF"). */
     QString overlayColor() const;
 
+    /**
+     * @brief Overlay background colour as a CSS hex string (e.g. "#00FF00").
+     *
+     * Defaults to pure green for OBS chroma keying, but is user-configurable
+     * so the overlay can be blended over any background.
+     */
+    QString overlayBgColor() const;
+
     /** @brief Font family name for the overlay readout. */
     QString overlayFont() const;
 

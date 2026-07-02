@@ -33,6 +33,7 @@ AppConfig::AppConfig()
     def("display/show_stats",      "true");
     def("display/overlay_enabled", "false");
     def("overlay/color",           "#00C0FF");
+    def("overlay/bg_color",        "#00FF00");
     def("overlay/font",            "Courier New");
     def("overlay/size",            "72");
     def("overlay/pos_x",           "-1");
@@ -68,6 +69,7 @@ bool AppConfig::showStats() const         { return get("display", "show_stats").
 bool AppConfig::overlayEnabled() const    { return get("display", "overlay_enabled").toLower() == "true"; }
 
 QString AppConfig::overlayColor() const   { return get("overlay", "color"); }
+QString AppConfig::overlayBgColor() const { return get("overlay", "bg_color"); }
 QString AppConfig::overlayFont() const    { return get("overlay", "font"); }
 int AppConfig::overlaySize() const        { return get("overlay", "size").toInt(); }
 

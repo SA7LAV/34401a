@@ -145,6 +145,14 @@ QWidget* SetupDialog::buildOverlayTab()
     connect(m_colorBtn, &QPushButton::clicked, this, &SetupDialog::pickOverlayColor);
     form->addRow(new QLabel(tl("lbl_overlay_color")), m_colorBtn);
 
+    m_bgColor = AppConfig::instance().overlayBgColor();
+    m_bgColorBtn = new QPushButton;
+    m_bgColorBtn->setFixedSize(80, 28);
+    m_bgColorBtn->setStyleSheet(
+        QString("background: %1; border: 1px solid #2A3560;").arg(m_bgColor));
+    connect(m_bgColorBtn, &QPushButton::clicked, this, &SetupDialog::pickOverlayBgColor);
+    form->addRow(new QLabel(tl("lbl_overlay_bg_color")), m_bgColorBtn);
+
     m_overlayFontCombo = new QComboBox;
     m_overlayFontCombo->addItems({
         "Courier New", "Liberation Mono", "DejaVu Sans Mono",
@@ -166,6 +174,16 @@ void SetupDialog::pickOverlayColor()
         m_overlayColor = c.name();
         m_colorBtn->setStyleSheet(
             QString("background: %1; border: 1px solid #2A3560;").arg(m_overlayColor));
+    }
+}
+
+void SetupDialog::pickOverlayBgColor()
+{
+    QColor c = QColorDialog::getColor(QColor(m_bgColor), this);
+    if (c.isValid()) {
+        m_bgColor = c.name();
+        m_bgColorBtn->setStyleSheet(
+            QString("background: %1; border: 1px solid #2A3560;").arg(m_bgColor));
     }
 }
 
@@ -206,6 +224,9 @@ void SetupDialog::loadFromConfig()
     m_overlayColor = cfg.overlayColor();
     m_colorBtn->setStyleSheet(
         QString("background: %1; border: 1px solid #2A3560;").arg(m_overlayColor));
+    m_bgColor = cfg.overlayBgColor();
+    m_bgColorBtn->setStyleSheet(
+        QString("background: %1; border: 1px solid #2A3560;").arg(m_bgColor));
     m_overlayFontCombo->setCurrentText(cfg.overlayFont());
     m_overlaySizeCombo->setCurrentText(QString::number(cfg.overlaySize()));
 }
@@ -228,7 +249,8 @@ void SetupDialog::saveAndAccept()
     cfg.set("display", "show_stats",      m_showStatsChk->isChecked() ? "true" : "false");
     cfg.set("display", "overlay_enabled", m_overlayChk->isChecked() ? "true" : "false");
 
-    cfg.set("overlay", "color", m_overlayColor);
+    cfg.set("overlay", "color",    m_overlayColor);
+    cfg.set("overlay", "bg_color", m_bgColor);
     cfg.set("overlay", "font",  m_overlayFontCombo->currentText());
     cfg.set("overlay", "size",  m_overlaySizeCombo->currentText());
     cfg.set("app", "language",  m_langCombo->currentData().toString());

@@ -2,17 +2,19 @@
  * @file overlaywindow.h
  * @brief Frameless always-on-top overlay for OBS screen capture.
  *
- * The window has a solid #00FF00 (pure green) background so it can be keyed
- * out in OBS (or any other compositor that supports chroma keying), leaving
- * only the measurement text visible over any background in a stream or recording.
+ * The window defaults to a solid #00FF00 (pure green) background so it can be
+ * keyed out in OBS (or any other compositor that supports chroma keying),
+ * leaving only the measurement text visible over any background in a stream or
+ * recording.  The background colour is user-configurable.
  *
  * The overlay is draggable and saves its screen position to AppConfig so it
  * is restored to the same location on the next launch.  Position writes are
  * debounced through a 500 ms single-shot timer to avoid hammering QSettings
  * during a drag operation.
  *
- * Font family, text colour, and font size are all configurable via the Setup
- * dialog (Overlay tab) and applied by calling applyStyle().
+ * Font family, text colour, background colour, and font size are all
+ * configurable via the Setup dialog (Overlay tab) and applied by calling
+ * applyStyle().
  */
 #pragma once
 #include <QWidget>
@@ -52,6 +54,17 @@ public slots:
      *                  the unit sits flush against the number.
      */
     void updateValue(double rawValue);
+
+    /**
+     * @brief Shows an overload indicator instead of a numeric value.
+     *
+     * Mirrors DisplayWidget::showOverload() on the streaming overlay: the value
+     * is replaced by @p text and the unit label is hidden until the next
+     * updateValue() call.
+     *
+     * @param text  Overload text to display (e.g. "OVL.D" or "OPEN").
+     */
+    void showOverload(const QString& text);
 
 protected:
     /** @brief Begins a native system move (Wayland/X11) or falls back to manual drag. */

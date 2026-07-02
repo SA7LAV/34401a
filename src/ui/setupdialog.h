@@ -11,7 +11,7 @@
  *  - **Interface**   – Serial port parameters
  *  - **Measurement** – Sampling rate, NPLC, Auto-Zero
  *  - **Display**     – Decimal places, MIN/MAX/AVG visibility
- *  - **Overlay**     – OBS overlay enable, font, colour, size
+ *  - **Overlay**     – OBS overlay enable, font, text/background colour, size
  */
 #pragma once
 #include <QDialog>
@@ -70,6 +70,14 @@ private:
     void pickOverlayColor();
 
     /**
+     * @brief Opens a colour picker for the overlay background colour.
+     *
+     * The selected colour is buffered in m_bgColor and applied to the
+     * background swatch button; it is persisted only by saveAndAccept().
+     */
+    void pickOverlayBgColor();
+
+    /**
      * @brief Applies the selected language immediately for a live preview.
      *
      * Triggered on every combo-box change; reverted on Cancel via m_originalLang.
@@ -77,7 +85,8 @@ private:
     void onLangChanged();
 
     QString m_originalLang; ///< Language active when the dialog opened; restored on Cancel
-    QString m_overlayColor; ///< Buffered overlay colour (hex string, e.g. "#00C0FF")
+    QString m_overlayColor; ///< Buffered overlay text colour (hex string, e.g. "#00C0FF")
+    QString m_bgColor;      ///< Buffered overlay background colour (hex string, e.g. "#00FF00")
 
     QComboBox*   m_langCombo{nullptr};
     QComboBox*   m_portCombo{nullptr};
@@ -92,7 +101,8 @@ private:
     QComboBox*   m_decimalsCombo{nullptr};
     QCheckBox*   m_showStatsChk{nullptr};
     QCheckBox*   m_overlayChk{nullptr};
-    QPushButton* m_colorBtn{nullptr};     ///< Colour swatch; click to open colour picker
+    QPushButton* m_colorBtn{nullptr};     ///< Text colour swatch; click to open colour picker
+    QPushButton* m_bgColorBtn{nullptr};   ///< Background colour swatch; click to open colour picker
     QComboBox*   m_overlayFontCombo{nullptr};
     QComboBox*   m_overlaySizeCombo{nullptr};
 };

@@ -17,8 +17,6 @@ OverlayWindow::OverlayWindow(QWidget* parent)
               Qt::WindowStaysOnTopHint |
               Qt::Tool)
 {
-    setStyleSheet("background: #00FF00;");
-
     m_saveTimer = new QTimer(this);
     m_saveTimer->setSingleShot(true);
     m_saveTimer->setInterval(500);
@@ -70,9 +68,13 @@ void OverlayWindow::moveEvent(QMoveEvent* event)
 
 void OverlayWindow::applyStyle()
 {
-    QString color  = AppConfig::instance().overlayColor();
-    QString family = AppConfig::instance().overlayFont();
-    int size       = AppConfig::instance().overlaySize();
+    QString color   = AppConfig::instance().overlayColor();
+    QString bgColor = AppConfig::instance().overlayBgColor();
+    QString family  = AppConfig::instance().overlayFont();
+    int size        = AppConfig::instance().overlaySize();
+
+    // Window background (chroma-key colour for OBS); labels stay transparent.
+    setStyleSheet(QString("background: %1;").arg(bgColor));
 
     QFont valFont (family, size,        QFont::Bold);
     QFont unitFont(family, size * 2 / 3, QFont::Bold);
@@ -92,12 +94,22 @@ void OverlayWindow::updateValue(double rawValue)
     m_valLabel->setText(valStr);
     m_prefixLabel->setText(prefix);
     m_prefixLabel->setVisible(!prefix.isEmpty());
+    m_unitLabel->setVisible(true); // restore after a possible overload display
+}
+
+void OverlayWindow::showOverload(const QString& text)
+{
+    m_valLabel->setText(text);
+    m_prefixLabel->setText("");
+    m_prefixLabel->setVisible(false);
+    m_unitLabel->setVisible(false);
 }
 
 void OverlayWindow::setUnit(const QString& unit)
 {
     m_unit = unit;
     m_unitLabel->setText(unit);
+    m_unitLabel->setVisible(true); // may have been hidden by a prior overload
 }
 
 void OverlayWindow::mousePressEvent(QMouseEvent* event)
