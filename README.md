@@ -15,8 +15,10 @@ Written in **C++17 / Qt6**.
 - **Live display** with large readout and SI prefix scaling (m, k, M, …)
 - **MIN / MAX / AVG** statistics
 - **Configurable sampling rate** (50 ms / 200 ms / 500 ms)
+- **Pause / resume** measurements at any time without disconnecting
+- **Overload indication** – shows `OVL.D` / `OPEN` / `OVLD` when the input exceeds the selected range
 - **NPLC** (integration time) and **Auto-Zero** settings
-- **OBS streaming overlay** – frameless, always-on-top window with chroma-key green background; font, color and size configurable
+- **OBS streaming overlay** – frameless, always-on-top window with configurable background (chroma-key green by default); font, color and size configurable
 - **Language switch** (Deutsch / English / Svenska) – live, no restart needed
 - **Adjustable decimal places** (2 / 4 / 6)
 - Settings are saved across sessions
@@ -133,9 +135,29 @@ The **RANGE** buttons update automatically for the selected mode.
 
 Statistics are calculated from the moment you connect. Click a different **FUNCTION** to reset them.
 
+### Stopping and resuming measurements
+
+Click **Stop** to pause the continuous polling. The last reading stays frozen on the display, the statistics stop updating, and no more data is sent over the serial line – but the connection stays open and the instrument remains under remote control.
+
+The button then changes to **Resume**. Click it to continue measuring immediately, without disconnecting and reconnecting. (Switching the measurement mode or range while stopped has no effect until you resume.)
+
+Use this to hold a reading, to quiet the serial bus, or to pause logging without releasing the instrument. To fully release the multimeter back to its front panel, use **Local** or **Disconnect** instead.
+
+### Overload indication
+
+When the input exceeds the selected measurement range, the 34401A reports an overrange condition (`+9.9E+37` on the remote interface). The display then shows an overload indicator that mirrors the front panel:
+
+| Mode | Indicator |
+|------|-----------|
+| 2W Ω / 4W Ω | `OVL.D` |
+| Diode / Continuity | `OPEN` |
+| all other modes (VDC, ADC, VAC, AAC, Frequency, Period) | `OVLD` |
+
+As soon as the reading returns to a valid value, the normal display resumes automatically. Selecting a higher manual range – or **Auto** – usually clears the overload.
+
 ### OBS Overlay
 
-Enable the overlay in **⚙ Setup → Overlay**. A frameless, always-on-top window appears with a chroma-key green background – ready to key out in OBS. The window is draggable. Font family, color and size are configurable.
+Enable the overlay in **⚙ Setup → Overlay**. A frameless, always-on-top window appears with a chroma-key green background – ready to key out in OBS. The window is draggable. Font family, text color, background color and size are configurable; the background defaults to pure green (`#00FF00`) for chroma keying but can be set to any color.
 
 ### Setup dialog (⚙ Setup)
 
@@ -145,7 +167,7 @@ Enable the overlay in **⚙ Setup → Overlay**. A frameless, always-on-top wind
 | **Interface / Schnittstelle** | Port, baud rate, parity, stop bits, data bits, timeout |
 | **Measurement / Messung** | Sampling rate, NPLC (integration time), Auto-Zero |
 | **Display / Anzeige** | Decimal places (2 / 4 / 6), show/hide MIN/MAX/AVG |
-| **Overlay** | Enable/disable, font, color, size |
+| **Overlay** | Enable/disable, font, text color, background color, size |
 
 Settings are saved to `~/.config/hp34401a/serial_config.ini`.
 
@@ -155,7 +177,7 @@ Settings are saved to `~/.config/hp34401a/serial_config.ini`.
 |--------|----------|
 | **⚙ Setup** | Open settings dialog |
 | **Connect / Verbinden** | Open connection dialog and connect; click again to disconnect |
-| **Stop** | Pause measurements (keeps connection) |
+| **Stop / Resume** | Pause measurements without disconnecting; the button then shows **Resume** – click it to continue |
 | **Local** | Release the multimeter from remote control (SYST:LOC) |
 
 ---
@@ -187,11 +209,14 @@ These match the multimeter factory defaults.
 → Verify multimeter is in SCPI mode (not HP mode)  
 → Try increasing Timeout in Setup → Interface
 
-**Reading shows +9.90000E+37:**  
-→ Multimeter is in overload. The app ignores these values automatically.
+**Display shows `OVL.D`, `OPEN` or `OVLD`:**  
+→ The input exceeds the selected range (overload). Select a higher manual **RANGE** or switch to **Auto**. See [Overload indication](#overload-indication).
 
 **App opens but display stays at `----`:**  
 → Click **Connect**, select port and confirm.
+
+**Display seems frozen / no updates:**  
+→ Measurements may be paused – if the button on the right reads **Resume**, click it to continue. Otherwise check the connection.
 
 ---
 
