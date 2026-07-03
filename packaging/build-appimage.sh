@@ -2,7 +2,7 @@
 set -e
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-VERSION="1.1.5"
+VERSION="1.1.6"
 APPDIR="$ROOT/dist/AppDir"
 OUTPUT="$ROOT/dist/HP_34401A_GUI-${VERSION}-x86_64.AppImage"
 

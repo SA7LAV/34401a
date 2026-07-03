@@ -40,11 +40,11 @@ Written in **C++17 / Qt6**.
 
 ### Option 1 – AppImage (any Linux distro, no install needed)
 
-Download `HP_34401A_GUI-1.1.5-x86_64.AppImage` from the [releases page](https://github.com/SA7LAV/34401a/releases).
+Download `HP_34401A_GUI-1.1.6-x86_64.AppImage` from the [releases page](https://github.com/SA7LAV/34401a/releases).
 
 ```bash
-chmod +x HP_34401A_GUI-1.1.5-x86_64.AppImage
-./HP_34401A_GUI-1.1.5-x86_64.AppImage
+chmod +x HP_34401A_GUI-1.1.6-x86_64.AppImage
+./HP_34401A_GUI-1.1.6-x86_64.AppImage
 ```
 
 No dependencies – Qt6 and everything else is bundled.
@@ -53,10 +53,10 @@ No dependencies – Qt6 and everything else is bundled.
 
 ### Option 2 – Arch Linux / CachyOS (.pkg.tar.zst)
 
-Download `hp34401a-gui-1.1.5-1-x86_64.pkg.tar.zst` from the [releases page](https://github.com/SA7LAV/34401a/releases).
+Download `hp34401a-gui-1.1.6-1-x86_64.pkg.tar.zst` from the [releases page](https://github.com/SA7LAV/34401a/releases).
 
 ```bash
-sudo pacman -U hp34401a-gui-1.1.5-1-x86_64.pkg.tar.zst
+sudo pacman -U hp34401a-gui-1.1.6-1-x86_64.pkg.tar.zst
 hp34401a
 ```
 
@@ -64,10 +64,10 @@ hp34401a
 
 ### Option 3 – Ubuntu / Debian (.deb)
 
-Download `hp34401a-gui_1.1.5_amd64.deb` from the [releases page](https://github.com/SA7LAV/34401a/releases).
+Download `hp34401a-gui_1.1.6_amd64.deb` from the [releases page](https://github.com/SA7LAV/34401a/releases).
 
 ```bash
-sudo dpkg -i hp34401a-gui_1.1.5_amd64.deb
+sudo dpkg -i hp34401a-gui_1.1.6_amd64.deb
 hp34401a
 ```
 

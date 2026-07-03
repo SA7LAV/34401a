@@ -5,6 +5,22 @@ Versions follow [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [1.1.6] – 2026-07-03
+
+### Added
+- The Stop button now toggles to "Resume": measurements can be paused and
+  continued on the still-open connection without disconnecting and
+  reconnecting
+
+### Fixed
+- Error messages are no longer overwritten by the "stopped" status when a
+  measurement is halted
+- Documentation: corrected the outdated troubleshooting note claiming
+  overrange (`+9.9E+37`) values are ignored — they are now shown as
+  `OVL.D` / `OPEN` / `OVLD`
+
+---
+
 ## [1.1.5] – 2026-07-02
 
 ### Added
