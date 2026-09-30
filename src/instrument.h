@@ -138,6 +138,8 @@ private:
     QSerialPort*      m_port{nullptr};
     QTimer*           m_timer{nullptr};
     QQueue<QString>   m_cmdQueue; ///< Pending SCPI commands; drained each poll cycle
+    QByteArray        m_rxBuffer; ///< Incoming bytes, parsed line-by-line
+    bool              m_inCycle{false}; ///< true while doOneMeasurement() is running
 };
 
 

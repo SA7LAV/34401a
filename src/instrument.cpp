@@ -7,6 +7,7 @@
 #include "instrument.h"
 #include "config.h"
 #include <QThread>
+#include <QElapsedTimer>
 #include <cmath>
 
 // ──────────────────────────────── Worker ─────────────────────────────────────
@@ -75,6 +76,12 @@ void InstrumentWorker::connectDevice(const QString& port, int baudrate,
 void InstrumentWorker::doOneMeasurement()
 {
     if (!m_port || !m_port->isOpen()) return;
+    m_inCycle = true;
+
+    // Discard stale bytes so leftover data from a previous cycle cannot
+    // corrupt this cycle's response.
+    m_port->clear();
+    m_rxBuffer.clear();
 
     // Process pending commands
     bool hadConf = false;
@@ -94,38 +101,43 @@ void InstrumentWorker::doOneMeasurement()
     m_port->write("READ?\r\n");
 
     int timeoutMs = static_cast<int>(AppConfig::instance().serialTimeout().toDouble() * 1000);
-    // Poll in short bursts so we can stop without a long wait
-    int elapsed = 0;
-    bool gotData = false;
-    while (elapsed < timeoutMs) {
-        int wait = qMin(200, timeoutMs - elapsed);
-        if (m_port->waitForReadyRead(wait)) {
-            gotData = true;
+    // Read in small non-blocking chunks until a full line has arrived;
+    // QSerialPort::readLine() would block on fragmented responses.
+    QElapsedTimer elapsedTimer;
+    elapsedTimer.start();
+    QByteArray line;
+    bool gotLine = false;
+    while (elapsedTimer.elapsed() < timeoutMs) {
+        int remaining = timeoutMs - static_cast<int>(elapsedTimer.elapsed());
+        if (m_port->waitForReadyRead(qMin(30, remaining)))
+            m_rxBuffer.append(m_port->readAll());
+        int nl = m_rxBuffer.indexOf('\n');
+        if (nl >= 0) {
+            line = m_rxBuffer.left(nl);
+            m_rxBuffer.remove(0, nl + 1);
+            gotLine = true;
             break;
         }
-        elapsed += wait;
         // If timer was stopped externally while we were waiting, bail out
-        if (!m_timer || !m_port || !m_port->isOpen()) return;
+        if (!m_timer || !m_port || !m_port->isOpen()) break;
     }
 
-    if (gotData) {
-        QByteArray resp = m_port->readLine().trimmed();
-        if (!resp.isEmpty()) {
-            bool ok;
-            double val = resp.toDouble(&ok);
-            if (ok) {
-                // +9.9E+37 is the SCPI overrange sentinel returned by the 34401A
-                // when the input exceeds the selected measurement range.  Report
-                // it as an explicit overload rather than propagating a meaningless
-                // large number (or silently freezing on the last valid reading).
-                if (std::abs(val) >= OVERLOAD_SENTINEL)
-                    emit overloadDetected();
-                else
-                    emit measurementReceived(val);
-            }
+    if (gotLine) {
+        bool ok;
+        double val = line.trimmed().toDouble(&ok);
+        if (ok) {
+            // +9.9E+37 is the SCPI overrange sentinel returned by the 34401A
+            // when the input exceeds the selected measurement range.  Report
+            // it as an explicit overload rather than propagating a meaningless
+            // large number (or silently freezing on the last valid reading).
+            if (std::abs(val) >= OVERLOAD_SENTINEL)
+                emit overloadDetected();
+            else
+                emit measurementReceived(val);
         }
     }
 
+    m_inCycle = false;
     if (m_timer && m_port && m_port->isOpen())
         m_timer->start(AppConfig::instance().samplingMs());
 }
@@ -133,6 +145,10 @@ void InstrumentWorker::doOneMeasurement()
 void InstrumentWorker::sendCommand(const QString& cmd)
 {
     m_cmdQueue.enqueue(cmd);
+    // If a cycle is not running, pull the next tick forward so the command
+    // is delivered without waiting for the full sampling interval.
+    if (!m_inCycle && m_timer && m_timer->isActive())
+        m_timer->start(50);
 }
 
 void InstrumentWorker::stopSampling()
@@ -151,6 +167,7 @@ void InstrumentWorker::startSampling()
 
     m_timer = new QTimer(this);
     m_timer->setSingleShot(true);
+    m_timer->setTimerType(Qt::PreciseTimer);
     connect(m_timer, &QTimer::timeout, this, &InstrumentWorker::doOneMeasurement);
     m_timer->start(0); // resume immediately
 }
