@@ -7,13 +7,26 @@ Versions follow [Semantic Versioning](https://semver.org/).
 
 ## [1.1.8] – 2026-10-01
 
+### Added
+- Resolution (counts) setting in Setup → Measurement
+  (100000 / 10000 / 1000) to speed up the measurement rate, e.g. for a
+  continuous continuity beeper
+- `SYST:ERR?` error codes are shown in the status bar when a `READ?` goes
+  unanswered
+
 ### Fixed
 - Connecting and switching measurement function/range stalled for the full
   serial timeout (~9 s): the instrument ignores `READ?` while it is busy
   measuring, and the fast 50 ms poll kept hitting that busy window. Reads are
-  now paced — one `READ?` at a time, retried after a second until the
-  response arrives — so a new value appears ~2 s after connect or a switch
-  instead of ~9 s
+  now paced — one `READ?` at a time, retried until the response arrives — so
+  a new value appears ~2 s after connect or a switch instead of ~9 s
+- The instrument's error LED lit up and the (undisableable) error beep
+  sounded repeatedly: the 34401A has no `:RANG` command, so every range
+  button sent an invalid command; the range is now set as the first
+  `CONFigure` parameter. An invalid `NPLC` command was also sent for AC
+  measurements (only dc voltage/current and resistance support NPLC), and a
+  redundant auto-range `CONFigure` followed every mode change into the
+  instrument's reconfiguration window
 - The instrument's error LED lit up frequently: hammering it with `READ?`
   every 50 ms overran its small serial buffer. With paced polling the
   command rate matches the measurement rate, so no more overruns
