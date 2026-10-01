@@ -6,7 +6,7 @@
 # Project
 #---------------------------------------------------------------------------
 PROJECT_NAME           = "HP/Agilent/Keysight 34401A – Multimeter GUI"
-PROJECT_NUMBER         = 1.1.6
+PROJECT_NUMBER         = 1.1.8
 PROJECT_BRIEF          = "Linux control software for the 34401A digital multimeter"
 PROJECT_LOGO           = assets/hp34401a.png
 OUTPUT_DIRECTORY       = docs
