@@ -1,7 +1,8 @@
 # HP / Agilent / Keysight 34401A – Linux GUI
 
 Linux control software for the HP/Agilent/Keysight 34401A digital multimeter.  
-Supports all 10 measurement modes with live display, MIN/MAX/AVG statistics and configurable settings.
+Supports all 10 measurement modes with live display, MIN/MAX/AVG statistics and configurable settings.  
+Includes an OBS streaming overlay to show live measurements in your streams and videos.
 
 Written in **C++17 / Qt6**.
 
