@@ -33,8 +33,10 @@ public:
      *
      * All existing range buttons are deleted and new ones are created from
      * ModeConfig::ranges.  The Auto button is always selected after a mode
-     * change.  If the mode has no ranges (DIODE, CONT) the panel is left
-     * empty and no signal is emitted.
+     * change, without emitting rangeSelected() — the mode's CONFigure
+     * command already selects autoranging, so a second CONF: would only
+     * hit the instrument's reconfiguration window.  If the mode has no
+     * ranges (DIODE, CONT) the panel is left empty and no signal is emitted.
      */
     void setMode(MeasMode mode);
 
@@ -58,4 +60,5 @@ private:
     QHBoxLayout*        m_layout{nullptr};
     QList<QPushButton*> m_buttons;
     QPushButton*        m_activeBtn{nullptr}; ///< Currently highlighted button; nullptr before first selection
+    bool                m_silent{false};      ///< Suppress rangeSelected() while setMode() resets the panel
 };

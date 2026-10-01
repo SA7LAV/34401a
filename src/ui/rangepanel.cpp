@@ -38,8 +38,11 @@ void RangePanel::setMode(MeasMode mode)
         m_buttons.append(btn);
     }
 
-    if (!m_buttons.isEmpty())
+    if (!m_buttons.isEmpty()) {
+        m_silent = true;
         onSelect("", m_buttons.first()); // select Auto (first button, empty cmd)
+        m_silent = false;
+    }
 }
 
 void RangePanel::onSelect(const QString& cmd, QPushButton* btn)
@@ -48,5 +51,6 @@ void RangePanel::onSelect(const QString& cmd, QPushButton* btn)
         m_activeBtn->setStyleSheet(INACTIVE_SS);
     m_activeBtn = btn;
     btn->setStyleSheet(ACTIVE_SS);
-    emit rangeSelected(cmd);
+    if (!m_silent)
+        emit rangeSelected(cmd);
 }

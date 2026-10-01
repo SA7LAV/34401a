@@ -34,8 +34,9 @@ enum class MeasMode {
 /**
  * @brief Ordered list of available measurement ranges for one mode.
  *
- * Each entry is a {display label, SCPI range command} pair.
- * An empty SCPI command string signals the "Auto" range, which causes the
+ * Each entry is a {display label, range value} pair.  The range value is the
+ * numeric range parameter of the CONFigure command (e.g. "0.1", "1000");
+ * an empty string signals the "Auto" range (DEF), which causes the
  * instrument to select the range automatically.
  */
 using RangeList = QList<QPair<QString, QString>>;
@@ -69,3 +70,17 @@ extern const QMap<MeasMode, ModeConfig> MODES;
  *         Values outside the pico–tera range fall back to scientific notation.
  */
 std::pair<QString, QString> formatValue(double value, int decimals = 4);
+
+/**
+ * @brief Builds the CONFigure command for a mode, range and resolution.
+ *
+ * The 34401A has no :RANG subsystem — the range is the first parameter and
+ * the resolution (in measurement units per count) the second parameter of
+ * CONFigure.  DIODE/CONT take no parameters; FREQ/PER keep the default
+ * resolution.
+ *
+ * @param mode       Measurement function.
+ * @param rangeValue Range value from ModeConfig::ranges; empty for Auto (DEF).
+ * @param counts     Full-scale counts (resolution), e.g. 100000 or 1000.
+ */
+QString buildConfCommand(MeasMode mode, const QString& rangeValue, int counts);

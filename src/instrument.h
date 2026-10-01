@@ -123,6 +123,13 @@ signals:
     /** @brief Emitted when connectDevice() fails to open the port or times out. */
     void connectionFailed(const QString& msg);
 
+    /**
+     * @brief Non-fatal diagnostic message (e.g. an instrument error code).
+     *
+     * Shown in the status bar; does not stop sampling.
+     */
+    void statusMessage(const QString& msg);
+
 private slots:
     /**
      * @brief Fires on each timer tick; flushes the command queue, sends
@@ -135,11 +142,20 @@ private slots:
     void doOneMeasurement();
 
 private:
+    /**
+     * @brief Queries SYST:ERR? and returns the instrument's error queue.
+     *
+     * Returns "0" when no error is pending, the numeric error code
+     * otherwise, or an empty string on timeout.  Consumes the error.
+     */
+    QString queryError();
+
     QSerialPort*      m_port{nullptr};
     QTimer*           m_timer{nullptr};
     QQueue<QString>   m_cmdQueue; ///< Pending SCPI commands; drained each poll cycle
     QByteArray        m_rxBuffer; ///< Incoming bytes, parsed line-by-line
     bool              m_inCycle{false}; ///< true while doOneMeasurement() is running
+    QString           m_lastFunc;  ///< Function of the last CONF: command, to detect function changes
 };
 
 
@@ -221,6 +237,9 @@ signals:
 
     /** @brief Emitted when the connection attempt fails. */
     void connectionFailed(const QString& msg);
+
+    /** @brief Re-emitted from InstrumentWorker::statusMessage. */
+    void statusMessage(const QString& msg);
 
 private:
     QThread*          m_thread;

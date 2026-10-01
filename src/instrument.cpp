@@ -57,10 +57,11 @@ void InstrumentWorker::connectDevice(const QString& port, int baudrate,
         m_port->waitForBytesWritten(4000);
     }
 
-    // The 34401A emits a short beep and is briefly busy after a CONF: command.
-    // 300 ms is sufficient to let the instrument settle; clearing the buffer
-    // discards any partial response or echo that arrived during that window.
-    QThread::msleep(300);
+    // The 34401A reconfigures its front end after a CONF: command and is
+    // busy for up to a second; commands (incl. READ?) arriving in that
+    // window are rejected with an error.  1 s lets the instrument settle;
+    // clearing the buffer discards anything that arrived during that window.
+    QThread::msleep(1000);
     m_port->clear();
 
     connected.store(true);
@@ -84,42 +85,78 @@ void InstrumentWorker::doOneMeasurement()
     m_rxBuffer.clear();
 
     // Process pending commands
-    bool hadConf = false;
     while (!m_cmdQueue.isEmpty()) {
         QString cmd = m_cmdQueue.dequeue();
         m_port->write((cmd + "\r\n").toUtf8());
         m_port->waitForBytesWritten(4000);
-        if (cmd.startsWith("CONF:") || cmd.startsWith("MEAS:"))
-            hadConf = true;
-    }
-
-    if (hadConf) {
-        QThread::msleep(300);
+        // The 34401A rejects commands received while it reconfigures its
+        // front end after a CONF: (error LED + error beep, and the error
+        // beep cannot be disabled with SYST:BEEP:STAT).  Settle after every
+        // command so the next one lands on an idle instrument.  A CONF:
+        // that changes the measurement function reconfigures the front end
+        // for up to a couple of seconds; a range-only CONF: on the current
+        // function settles within a second; plain parameter commands
+        // (NPLC, zero auto) settle quickly.
+        bool isConf = cmd.startsWith("CONF:") || cmd.startsWith("MEAS:");
+        if (isConf) {
+            QString func = cmd.section(' ', 1, 1); // e.g. "VOLT:DC" from "CONF:VOLT:DC 10,DEF"
+            bool funcChange = !m_lastFunc.isEmpty() && m_lastFunc != func;
+            m_lastFunc = func;
+            QThread::msleep(funcChange ? 2000 : 1000);
+        } else {
+            QThread::msleep(100);
+        }
         m_port->clear();
     }
 
-    m_port->write("READ?\r\n");
-
     int timeoutMs = static_cast<int>(AppConfig::instance().serialTimeout().toDouble() * 1000);
-    // Read in small non-blocking chunks until a full line has arrived;
-    // QSerialPort::readLine() would block on fragmented responses.
+    // The 34401A rejects a READ? that arrives while a measurement is in
+    // progress (error LED + beep).  A single measurement takes up to ~1.2 s
+    // (frequency/period) and AC measurements can be slower, so the patience
+    // window must exceed the longest measurement time; a shorter window
+    // makes every retry land in the busy window and beep once per cycle.
+    // Paced instead: send one READ?, wait up to READ_SETTLE_MS for the
+    // response line, retry until the full timeout.  In steady state the
+    // poll rate settles at the measurement rate, so every READ? lands on an
+    // idle instrument.
+    const int READ_SETTLE_MS = 2500;
     QElapsedTimer elapsedTimer;
     elapsedTimer.start();
     QByteArray line;
     bool gotLine = false;
-    while (elapsedTimer.elapsed() < timeoutMs) {
-        int remaining = timeoutMs - static_cast<int>(elapsedTimer.elapsed());
-        if (m_port->waitForReadyRead(qMin(30, remaining)))
-            m_rxBuffer.append(m_port->readAll());
-        int nl = m_rxBuffer.indexOf('\n');
-        if (nl >= 0) {
-            line = m_rxBuffer.left(nl);
-            m_rxBuffer.remove(0, nl + 1);
-            gotLine = true;
-            break;
+    while (!gotLine && elapsedTimer.elapsed() < timeoutMs) {
+        m_port->clear();
+        m_rxBuffer.clear();
+        m_port->write("READ?\r\n");
+        m_port->waitForBytesWritten(4000);
+
+        int waited = 0;
+        while (!gotLine && waited < READ_SETTLE_MS &&
+               elapsedTimer.elapsed() < timeoutMs) {
+            int chunk = qMin(10, qMin(READ_SETTLE_MS - waited,
+                timeoutMs - static_cast<int>(elapsedTimer.elapsed())));
+            if (chunk <= 0) break;
+            if (m_port->waitForReadyRead(chunk))
+                m_rxBuffer.append(m_port->readAll());
+            waited += chunk;
+            int nl = m_rxBuffer.indexOf('\n');
+            if (nl >= 0) {
+                line = m_rxBuffer.left(nl);
+                m_rxBuffer.remove(0, nl + 1);
+                gotLine = true;
+            }
+            // If timer was stopped externally while we were waiting, bail out
+            if (!m_timer || !m_port || !m_port->isOpen()) break;
         }
-        // If timer was stopped externally while we were waiting, bail out
-        if (!m_timer || !m_port || !m_port->isOpen()) break;
+
+        if (!gotLine) {
+            // No response within the patience window: the READ? was most
+            // likely rejected (busy instrument).  Read the instrument's
+            // error queue so the actual cause is visible in the status bar.
+            QString err = queryError();
+            if (!err.isEmpty() && err != "0")
+                emit statusMessage("34401A Fehler nach READ?: " + err);
+        }
     }
 
     if (gotLine) {
@@ -140,6 +177,26 @@ void InstrumentWorker::doOneMeasurement()
     m_inCycle = false;
     if (m_timer && m_port && m_port->isOpen())
         m_timer->start(AppConfig::instance().samplingMs());
+}
+
+QString InstrumentWorker::queryError()
+{
+    if (!m_port || !m_port->isOpen()) return QString();
+    m_port->clear();
+    m_rxBuffer.clear();
+    m_port->write("SYST:ERR?\r\n");
+    m_port->waitForBytesWritten(4000);
+
+    QElapsedTimer t;
+    t.start();
+    while (t.elapsed() < 1000) {
+        if (m_port->waitForReadyRead(30))
+            m_rxBuffer.append(m_port->readAll());
+        int nl = m_rxBuffer.indexOf('\n');
+        if (nl >= 0)
+            return m_rxBuffer.left(nl).trimmed();
+    }
+    return QString();
 }
 
 void InstrumentWorker::sendCommand(const QString& cmd)
@@ -205,6 +262,8 @@ Instrument::Instrument(QObject* parent) : QObject(parent)
             this,     &Instrument::connected);
     connect(m_worker, &InstrumentWorker::connectionFailed,
             this,     &Instrument::connectionFailed);
+    connect(m_worker, &InstrumentWorker::statusMessage,
+            this,     &Instrument::statusMessage);
 
     connect(m_thread, &QThread::finished, m_worker, &QObject::deleteLater);
     m_thread->start();

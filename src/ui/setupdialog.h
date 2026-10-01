@@ -97,6 +97,7 @@ private:
     QComboBox*   m_timeoutCombo{nullptr};
     QComboBox*   m_samplingCombo{nullptr};
     QComboBox*   m_nplcCombo{nullptr};
+    QComboBox*   m_countsCombo{nullptr};
     QCheckBox*   m_autozeroChk{nullptr};
     QComboBox*   m_decimalsCombo{nullptr};
     QCheckBox*   m_showStatsChk{nullptr};

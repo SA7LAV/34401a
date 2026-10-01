@@ -5,6 +5,30 @@ Versions follow [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [1.1.8] – 2026-10-01
+
+### Fixed
+- Connecting and switching measurement function/range stalled for the full
+  serial timeout (~9 s): the instrument ignores `READ?` while it is busy
+  measuring, and the fast 50 ms poll kept hitting that busy window. Reads are
+  now paced — one `READ?` at a time, retried after a second until the
+  response arrives — so a new value appears ~2 s after connect or a switch
+  instead of ~9 s
+- The instrument's error LED lit up frequently: hammering it with `READ?`
+  every 50 ms overran its small serial buffer. With paced polling the
+  command rate matches the measurement rate, so no more overruns
+
+---
+
+## [1.1.7] – 2026-10-01
+
+### Fixed
+- Polling stutter: serial responses are now read in non-blocking chunks via a
+  line buffer instead of a blocking `readLine()`, and pending commands pull
+  the next poll forward instead of waiting a full sampling interval
+
+---
+
 ## [1.1.6] – 2026-07-03
 
 ### Added

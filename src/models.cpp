@@ -9,69 +9,61 @@
 #define R(label, cmd) QPair<QString,QString>{label, cmd}
 
 const QMap<MeasMode, ModeConfig> MODES = {
+    // The 34401A has no :RANG subsystem: the range is the first parameter
+    // of the CONFigure command (see the 34401A Programming Guide, "The
+    // MEASure? and CONFigure Commands").  Entries hold the numeric range
+    // value; buildConfCommand() combines it with the configured resolution.
     {MeasMode::VDC, {"VDC", "CONF:VOLT:DC DEF,DEF", "VDC", {
         R("Auto",   ""),
-        R("100 mV", "VOLT:DC:RANG 0.1"),
-        R("1 V",    "VOLT:DC:RANG 1"),
-        R("10 V",   "VOLT:DC:RANG 10"),
-        R("100 V",  "VOLT:DC:RANG 100"),
-        R("1000 V", "VOLT:DC:RANG 1000"),
+        R("100 mV", "0.1"),
+        R("1 V",    "1"),
+        R("10 V",   "10"),
+        R("100 V",  "100"),
+        R("1000 V", "1000"),
     }}},
     {MeasMode::ADC, {"ADC", "CONF:CURR:DC DEF,DEF", "ADC", {
         R("Auto",   ""),
-        R("100 mA", "CURR:DC:RANG 0.1"),
-        R("1 A",    "CURR:DC:RANG 1"),
-        R("3 A",    "CURR:DC:RANG 3"),
+        R("100 mA", "0.1"),
+        R("1 A",    "1"),
+        R("3 A",    "3"),
     }}},
     {MeasMode::VAC, {"VAC", "CONF:VOLT:AC DEF,DEF", "VAC", {
         R("Auto",   ""),
-        R("100 mV", "VOLT:AC:RANG 0.1"),
-        R("1 V",    "VOLT:AC:RANG 1"),
-        R("10 V",   "VOLT:AC:RANG 10"),
-        R("100 V",  "VOLT:AC:RANG 100"),
-        R("1000 V", "VOLT:AC:RANG 1000"),
+        R("100 mV", "0.1"),
+        R("1 V",    "1"),
+        R("10 V",   "10"),
+        R("100 V",  "100"),
+        R("750 V",  "750"),
     }}},
     {MeasMode::AAC, {"AAC", "CONF:CURR:AC DEF,DEF", "AAC", {
         R("Auto", ""),
-        R("1 A",  "CURR:AC:RANG 1"),
-        R("3 A",  "CURR:AC:RANG 3"),
+        R("1 A",  "1"),
+        R("3 A",  "3"),
     }}},
     {MeasMode::OHM2, {u8"2W Ω", "CONF:RES DEF,DEF", u8"Ω", {
         R("Auto",     ""),
-        R(u8"100 Ω",  "RES:RANG 100"),
-        R(u8"1 kΩ",   "RES:RANG 1000"),
-        R(u8"10 kΩ",  "RES:RANG 10000"),
-        R(u8"100 kΩ", "RES:RANG 100000"),
-        R(u8"1 MΩ",   "RES:RANG 1000000"),
-        R(u8"10 MΩ",  "RES:RANG 10000000"),
-        R(u8"100 MΩ", "RES:RANG 100000000"),
+        R(u8"100 Ω",  "100"),
+        R(u8"1 kΩ",   "1000"),
+        R(u8"10 kΩ",  "10000"),
+        R(u8"100 kΩ", "100000"),
+        R(u8"1 MΩ",   "1000000"),
+        R(u8"10 MΩ",  "10000000"),
+        R(u8"100 MΩ", "100000000"),
     }}},
     {MeasMode::OHM4, {u8"4W Ω", "CONF:FRES DEF,DEF", u8"Ω", {
         R("Auto",     ""),
-        R(u8"100 Ω",  "FRES:RANG 100"),
-        R(u8"1 kΩ",   "FRES:RANG 1000"),
-        R(u8"10 kΩ",  "FRES:RANG 10000"),
-        R(u8"100 kΩ", "FRES:RANG 100000"),
-        R(u8"1 MΩ",   "FRES:RANG 1000000"),
-        R(u8"10 MΩ",  "FRES:RANG 10000000"),
-        R(u8"100 MΩ", "FRES:RANG 100000000"),
+        R(u8"100 Ω",  "100"),
+        R(u8"1 kΩ",   "1000"),
+        R(u8"10 kΩ",  "10000"),
+        R(u8"100 kΩ", "100000"),
+        R(u8"1 MΩ",   "1000000"),
+        R(u8"10 MΩ",  "10000000"),
+        R(u8"100 MΩ", "100000000"),
     }}},
-    {MeasMode::FREQ, {"FREQ", "CONF:FREQ DEF,DEF", "Hz", {
-        R("Auto",   ""),
-        R("100 mV", "FREQ:VOLT:RANG 0.1"),
-        R("1 V",    "FREQ:VOLT:RANG 1"),
-        R("10 V",   "FREQ:VOLT:RANG 10"),
-        R("100 V",  "FREQ:VOLT:RANG 100"),
-        R("1000 V", "FREQ:VOLT:RANG 1000"),
-    }}},
-    {MeasMode::PERIOD, {"PERIOD", "CONF:PER DEF,DEF", "s", {
-        R("Auto",   ""),
-        R("100 mV", "PER:VOLT:RANG 0.1"),
-        R("1 V",    "PER:VOLT:RANG 1"),
-        R("10 V",   "PER:VOLT:RANG 10"),
-        R("100 V",  "PER:VOLT:RANG 100"),
-        R("1000 V", "PER:VOLT:RANG 1000"),
-    }}},
+    // Frequency and period use a single fixed range (3 Hz to 300 kHz);
+    // there is no range selection for these functions.
+    {MeasMode::FREQ,   {"FREQ", "CONF:FREQ DEF,DEF", "Hz", {}}},
+    {MeasMode::PERIOD, {"PERIOD", "CONF:PER DEF,DEF", "s", {}}},
     {MeasMode::DIODE, {"DIODE", "CONF:DIOD", "VDC", {}}},
     {MeasMode::CONT,  {"CONT",  "CONF:CONT", u8"Ω", {}}},
 };
@@ -85,6 +77,25 @@ static const struct { double threshold; const char* prefix; } SI_PREFIXES[] = {
     {1e12,  "T"}, {1e9,  "G"}, {1e6,  "M"}, {1e3,  "k"},
     {1.0,   ""},  {1e-3, "m"}, {1e-6, u8"µ"}, {1e-9, "n"}, {1e-12, "p"},
 };
+
+QString buildConfCommand(MeasMode mode, const QString& rangeValue, int counts)
+{
+    const ModeConfig& cfg = MODES[mode];
+    switch (mode) {
+    case MeasMode::DIODE:  return "CONF:DIOD";
+    case MeasMode::CONT:   return "CONF:CONT";
+    case MeasMode::FREQ:   return "CONF:FREQ DEF,DEF";
+    case MeasMode::PERIOD: return "CONF:PER DEF,DEF";
+    default:
+        break;
+    }
+    const QString func = cfg.confCmd.section(' ', 0, 0); // e.g. "CONF:VOLT:DC"
+    if (rangeValue.isEmpty())
+        return func + " DEF,DEF";
+    // Resolution in measurement units per count: range / counts.
+    double res = rangeValue.toDouble() / counts;
+    return QString("%1 %2,%3").arg(func, rangeValue, QString::number(res, 'e', 0));
+}
 
 std::pair<QString, QString> formatValue(double value, int decimals)
 {

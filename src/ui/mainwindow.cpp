@@ -27,16 +27,7 @@ static const char* STOP_SS =
     "border: 1px solid #FF4444; border-radius: 4px; padding: 6px 14px; }"
     "QPushButton:hover { background: #601010; }";
 
-static const QMap<MeasMode, QString> AUTO_RANGE_CMD = {
-    {MeasMode::VDC,    "VOLT:DC:RANG:AUTO ON"},
-    {MeasMode::ADC,    "CURR:DC:RANG:AUTO ON"},
-    {MeasMode::VAC,    "VOLT:AC:RANG:AUTO ON"},
-    {MeasMode::AAC,    "CURR:AC:RANG:AUTO ON"},
-    {MeasMode::OHM2,   "RES:RANG:AUTO ON"},
-    {MeasMode::OHM4,   "FRES:RANG:AUTO ON"},
-    {MeasMode::FREQ,   "FREQ:VOLT:RANG:AUTO ON"},
-    {MeasMode::PERIOD, "PER:VOLT:RANG:AUTO ON"},
-};
+
 
 // Overload indicators mirroring the 34401A front-panel annunciators.  Modes not
 // listed here fall back to the generic "OVLD".
@@ -47,11 +38,12 @@ static const QMap<MeasMode, QString> OVERLOAD_TEXT = {
     {MeasMode::CONT,  "OPEN"},
 };
 
+// NPLC exists only for dc voltage, dc current and resistance; the 34401A
+// has no AC NPLC command (AC measurements use the detector bandwidth,
+// which is left at its default).
 static const QMap<MeasMode, QString> NPLC_CMD = {
     {MeasMode::VDC,    "SENS:VOLT:DC:NPLC %1"},
     {MeasMode::ADC,    "SENS:CURR:DC:NPLC %1"},
-    {MeasMode::VAC,    "SENS:VOLT:AC:NPLC %1"},
-    {MeasMode::AAC,    "SENS:CURR:AC:NPLC %1"},
     {MeasMode::OHM2,   "SENS:RES:NPLC %1"},
     {MeasMode::OHM4,   "SENS:FRES:NPLC %1"},
 };
@@ -130,6 +122,8 @@ void MainWindow::wireSignals()
             this, &MainWindow::onConnected);
     connect(m_instrument, &Instrument::connectionFailed,
             this, &MainWindow::onConnectionFailed);
+    connect(m_instrument, &Instrument::statusMessage,
+            this, [this](const QString& msg) { m_status->showMessage(msg); });
 
     connect(m_modePanel,  &ModePanel::modeChanged,
             this, &MainWindow::onModeChanged);
@@ -229,8 +223,9 @@ void MainWindow::onConnectClicked()
                       : QString();
 
     QStringList setupCmds = {"SYST:REM",
-                              QString("SENS:ZERO:AUTO %1").arg(az),
-                              MODES[m_currentMode].confCmd};
+                               QString("SENS:ZERO:AUTO %1").arg(az),
+                               buildConfCommand(m_currentMode, "",
+                                                AppConfig::instance().counts())};
     if (!nplcCmd.isEmpty()) setupCmds << nplcCmd;
 
     m_instrument->connectAsync(
@@ -273,21 +268,17 @@ void MainWindow::onModeChanged(MeasMode mode)
     m_display->resetStats();
     if (m_overlay) m_overlay->setUnit(MODES[mode].unit);
     if (m_instrument->isConnected()) {
-        m_instrument->sendCommand(MODES[mode].confCmd);
+        m_instrument->sendCommand(
+            buildConfCommand(mode, "", AppConfig::instance().counts()));
         sendNplc(mode);
     }
 }
 
-void MainWindow::onRangeSelected(const QString& scpiCmd)
+void MainWindow::onRangeSelected(const QString& rangeValue)
 {
     if (!m_instrument->isConnected()) return;
-    if (!scpiCmd.isEmpty()) {
-        m_instrument->sendCommand(scpiCmd);
-    } else {
-        auto it = AUTO_RANGE_CMD.find(m_currentMode);
-        if (it != AUTO_RANGE_CMD.end())
-            m_instrument->sendCommand(*it);
-    }
+    m_instrument->sendCommand(
+        buildConfCommand(m_currentMode, rangeValue, AppConfig::instance().counts()));
 }
 
 void MainWindow::onOverload()

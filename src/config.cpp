@@ -28,6 +28,7 @@ AppConfig::AppConfig()
     def("serial/timeout",          "9.0");
     def("measurement/sampling_ms", "50");
     def("measurement/nplc",        "1");
+    def("measurement/counts",      "100000");
     def("measurement/autozero",    "true");
     def("display/decimals",        "4");
     def("display/show_stats",      "true");
@@ -62,6 +63,7 @@ void AppConfig::setLanguage(const QString& v) { set("app", "language", v); }
 
 int AppConfig::samplingMs() const         { return get("measurement", "sampling_ms").toInt(); }
 QString AppConfig::nplc() const           { return get("measurement", "nplc"); }
+int AppConfig::counts() const             { return get("measurement", "counts").toInt(); }
 bool AppConfig::autozero() const          { return get("measurement", "autozero").toLower() == "true"; }
 
 int AppConfig::decimals() const           { return get("display", "decimals").toInt(); }

@@ -108,6 +108,12 @@ QWidget* SetupDialog::buildMeasurementTab()
     m_nplcCombo->addItems({"0.02", "0.2", "1", "10", "100"});
     form->addRow(new QLabel(tl("lbl_nplc")), m_nplcCombo);
 
+    m_countsCombo = new QComboBox;
+    m_countsCombo->addItem(tl("counts_max"),      "100000");
+    m_countsCombo->addItem(tl("counts_fast"),     "10000");
+    m_countsCombo->addItem(tl("counts_maxfast"),  "1000");
+    form->addRow(new QLabel(tl("lbl_counts")), m_countsCombo);
+
     m_autozeroChk = new QCheckBox(tl("chk_autozero"));
     form->addRow(new QLabel(tl("lbl_autozero")), m_autozeroChk);
 
@@ -215,6 +221,8 @@ void SetupDialog::loadFromConfig()
     int sampIdx = m_samplingCombo->findData(QString::number(cfg.samplingMs()));
     m_samplingCombo->setCurrentIndex(sampIdx >= 0 ? sampIdx : 0);
     m_nplcCombo->setCurrentText(cfg.nplc());
+    int countsIdx = m_countsCombo->findData(QString::number(cfg.counts()));
+    m_countsCombo->setCurrentIndex(countsIdx >= 0 ? countsIdx : 0);
     m_autozeroChk->setChecked(cfg.autozero());
 
     m_decimalsCombo->setCurrentText(QString::number(cfg.decimals()));
@@ -243,6 +251,7 @@ void SetupDialog::saveAndAccept()
 
     cfg.set("measurement", "sampling_ms", m_samplingCombo->currentData().toString());
     cfg.set("measurement", "nplc",        m_nplcCombo->currentText());
+    cfg.set("measurement", "counts",      m_countsCombo->currentData().toString());
     cfg.set("measurement", "autozero",    m_autozeroChk->isChecked() ? "true" : "false");
 
     cfg.set("display", "decimals",        m_decimalsCombo->currentText());

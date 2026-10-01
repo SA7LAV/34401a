@@ -69,6 +69,15 @@ public:
      */
     QString nplc() const;
 
+    /**
+     * @brief Number of counts per full scale (resolution).
+     *
+     * Lower counts make each measurement faster (100000 = 6½ digits,
+     * 10000 ≈ 5½ digits, 1000 ≈ 4½ digits).  Used as the resolution
+     * parameter of the CONFigure command.
+     */
+    int counts() const;
+
     /** @brief Returns @c true when the instrument's auto-zero feature is enabled. */
     bool autozero() const;
     ///@}
