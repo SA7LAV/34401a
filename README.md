@@ -17,7 +17,7 @@ Written in **C++17 / Qt6**.
 - **Configurable sampling rate** (50 ms / 200 ms / 500 ms)
 - **Pause / resume** measurements at any time without disconnecting
 - **Overload indication** – shows `OVL.D` / `OPEN` / `OVLD` when the input exceeds the selected range
-- **NPLC** (integration time) and **Auto-Zero** settings
+- **NPLC** (integration time), **Auto-Zero** and **resolution (counts)** settings
 - **OBS streaming overlay** – frameless, always-on-top window with configurable background (chroma-key green by default); font, color and size configurable
 - **Language switch** (Deutsch / English / Svenska) – live, no restart needed
 - **Adjustable decimal places** (2 / 4 / 6)
@@ -131,6 +131,8 @@ Click any button in the **FUNCTION** panel on the left to switch modes.
 The **RANGE** buttons update automatically for the selected mode.  
 **Auto** selects the optimal range automatically.
 
+> **Note on update rate:** the actual update rate is limited by the instrument's integration time (NPLC) and resolution (counts), not by the sampling rate alone. Lowering the counts in **Setup → Measurement** makes each measurement faster – e.g. for a nearly continuous continuity beeper. NPLC only applies to dc voltage, dc current and resistance; the 34401A has no NPLC setting for AC measurements.
+
 ### MIN / MAX / AVG
 
 Statistics are calculated from the moment you connect. Click a different **FUNCTION** to reset them.
@@ -165,7 +167,7 @@ Enable the overlay in **⚙ Setup → Overlay**. A frameless, always-on-top wind
 |-----|----------|
 | **Language / Sprache** | Switch between Deutsch, English and Svenska (live preview) |
 | **Interface / Schnittstelle** | Port, baud rate, parity, stop bits, data bits, timeout |
-| **Measurement / Messung** | Sampling rate, NPLC (integration time), Auto-Zero |
+| **Measurement / Messung** | Sampling rate, NPLC (integration time), resolution (counts), Auto-Zero |
 | **Display / Anzeige** | Decimal places (2 / 4 / 6), show/hide MIN/MAX/AVG |
 | **Overlay** | Enable/disable, font, text color, background color, size |
 
